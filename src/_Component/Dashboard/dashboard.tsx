@@ -1,4 +1,5 @@
 import { Bell, BookOpen, HomeIcon, User2 } from "lucide-react";
+import DashboardSection from "./dashboardsection";
 
 export default function Dashboard() {
   return (
@@ -45,7 +46,9 @@ export default function Dashboard() {
             </ul>
           </div>
         </nav>
-        <section className="bg-green-800 flex-1 h-full overflow-y-auto"></section>
+        <section className="bg-[#f8fafc] flex-1 h-full overflow-y-auto">
+          <DashboardSection/>
+        </section>
       </section>
     </main>
   );
