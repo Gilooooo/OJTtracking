@@ -71,7 +71,7 @@ export default function DashboardSection() {
         {/* Hours Week */}
         <div className="xs:flex-1/2 flex flex-col justify-between bg-[white] shadow-lg py-4 px-6 rounded-2xl self-stretch">
           <div className="flex items-center justify-between w-full">
-            <span className="p-3 bg-blue-600 text-white rounded-2xl">
+            <span className="p-3 bg-[#dbeafe] text-[#3a77fc] rounded-2xl">
               <Clock size={18} />
             </span>
             <div className="flex flex-col">
@@ -97,7 +97,7 @@ export default function DashboardSection() {
         {/* Logs */}
         <div className="xs:flex-1/2 bg-[white] flex flex-col justify-between shadow-lg py-4 px-6 rounded-2xl self-stretch">
           <div className="flex w-full">
-            <span className="p-3 bg-green-500 text-white rounded-2xl">
+            <span className="p-3 bg-[#dbfce7] text-[#2ab65e] rounded-2xl">
               <BookOpen size={18} />
             </span>
           </div>
@@ -128,7 +128,7 @@ export default function DashboardSection() {
           <div className="flex flex-col mt-4 space-y-3">
             {/* Recent Update for log */}
             <div className="flex items-center gap-2 py-2 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
-              <span className="p-2 bg-[#fef9c2] text-[#c9b77d] rounded-lg self-start">
+              <span className="p-2 bg-[#fef9c2] text-[#e2b44d] rounded-lg self-start">
                 <BookOpen size={18} />
               </span>
               <div className="flex flex-col gap-1 text-[#787a7e]">
@@ -142,7 +142,7 @@ export default function DashboardSection() {
               </div>
             </div>
             <div className="flex items-center gap-2 py-2 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
-              <span className="p-2 bg-blue-500 text-[#3b4c83] rounded-lg self-start">
+              <span className="p-2 bg-[#dbeafe] text-[#3a77fc] rounded-lg self-start">
                 <Star size={18} />
               </span>
               <div className="flex flex-col gap-1 text-[#787a7e]">
@@ -156,7 +156,7 @@ export default function DashboardSection() {
               </div>
             </div>
             <div className="flex items-center gap-2 py-2 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
-              <span className="p-2 bg-green-500 text-[#528f57] rounded-lg self-start">
+              <span className="p-2 bg-[#dbfce7] text-[#2ab65e] rounded-lg self-start">
                 <CircleCheckBig size={18} />
               </span>
               <div className="flex flex-col gap-1 text-[#787a7e]">

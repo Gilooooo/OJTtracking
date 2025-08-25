@@ -1,6 +1,8 @@
 "use client";
 import DashboardSection from "@/_Component/Dashboard/dashboardsection";
 import LogBook from "@/_Component/Logs/Logbook";
+import Notification from "@/_Component/Notifications/notification";
+import Profile from "@/_Component/Profile/Profile";
 import { Bell, BookOpen, HomeIcon, Menu, User2, X } from "lucide-react";
 import { useState } from "react";
 
@@ -15,9 +17,9 @@ export default function Dashboard() {
       case "logbook":
         return <LogBook />;
       case "profile":
-        return <div>Profile Section</div>;
+        return <Profile/>;
       case "notifications":
-        return <div>Notification Sections</div>;
+        return <Notification/>;
       default:
         return <DashboardSection />;
     }
