@@ -1,14 +1,20 @@
 "use client";
-import DashboardSection from "@/_Component/Dashboard/dashboardsection";
-import LogBook from "@/_Component/Logs/Logbook";
-import Notification from "@/_Component/Notifications/notification";
-import Profile from "@/_Component/Profile/Profile";
-import { Bell, BookOpen, HomeIcon, Menu, User2, X } from "lucide-react";
+import DashboardSection from "@/_Component/Student/Dashboard/dashboardsection";
+import LogBook from "@/_Component/Student/Logs/Logbook";
+import Notification from "@/_Component/Student/Notifications/notification";
+import Profile from "@/_Component/Student/Profile/Profile";
+import { Bell, BookOpen, HomeIcon, LogOut, Menu, User2, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function Dashboard() {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<string>("dashboard");
+  const router = useRouter();
+
+  const handleLogout = () => {
+    router.push('/');
+  };
 
   const renderSection = () => {
     switch (activeSection) {
@@ -99,6 +105,13 @@ export default function Dashboard() {
                   <Bell size={14} />
                   <span className="text-sm">Notifications</span>
                 </li>
+                <li 
+                  className="w-full rounded-lg py-2 px-3 text-red-500 flex items-center gap-2 cursor-pointer hover:bg-red-50"
+                  onClick={handleLogout}
+                >
+                  <LogOut size={14} />
+                  <span className="text-sm">Logout</span>
+                </li>
               </ul>
             </div>
           </div>
@@ -170,6 +183,13 @@ export default function Dashboard() {
               >
                 <Bell size={14} />
                 <span className="text-sm">Notifications</span>
+              </li>
+              <li 
+                className="w-full rounded-lg py-2 px-3 text-red-500 flex items-center gap-2 cursor-pointer hover:bg-red-50"
+                onClick={handleLogout}
+              >
+                <LogOut size={14} />
+                <span className="text-sm">Logout</span>
               </li>
             </ul>
           </div>

@@ -56,7 +56,7 @@ export default function Login() {
             </a>
             <p className="text-center text-sm">
               Don&apos;t have an account?{" "}
-              <a className="text-blue-400">Sign Up</a>
+              <a className="text-blue-400" href="/SignUp">Sign Up</a>
             </p>
           </div>
         </form>
