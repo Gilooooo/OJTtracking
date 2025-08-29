@@ -9,6 +9,7 @@ import {
   Phone,
   Star,
   TrendingUp,
+  X,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -31,39 +32,39 @@ interface StudentInfo {
 
 export default function Student_Profile() {
   const { data: session } = useSession();
-  const [ studentData, setStudentData ] = useState<Data>({});
-    const [initialName , setInitialName] = useState<string>("");
-    const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
+  const [studentData, setStudentData] = useState<Data>({});
+  const [initialName, setInitialName] = useState<string>("");
+  const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const InitialNaming = () => {
-    const name = session?.user?.name?.trim();
-    const t = name?.split(" ")
-    setInitialName((t?.[0]?.[0] || '') + (t?.[1]?.[0] || ''))
-  }
-  useEffect(() =>{
-    InitialNaming();
-  })
   useEffect(() => {
-        const fetchData = async () => {
+    // Initial Name Function
+    const InitialNaming = () => {
+      const name = session?.user?.name?.trim();
+      const t = name?.split(" ");
+      setInitialName((t?.[0]?.[0] || "") + (t?.[1]?.[0] || ""));
+    };
+    InitialNaming();
+    // Fetch Data GET
+    const fetchData = async () => {
       if (session?.user?.id) {
         try {
           const response = await fetch(
             `/api/request/student?id=${session.user.id}`
           );
           const data = await response.json();
-          
+
           if (response.ok) {
             setStudentInfo(data);
           } else {
-            console.error('Error:', data.error);
+            console.error("Error:", data.error);
           }
         } catch (error) {
-          console.error('Fetch error:', error);
+          console.error("Fetch error:", error);
         }
       }
     };
     fetchData();
-
 
     setStudentData({
       name: session?.user?.name || undefined,
@@ -83,7 +84,10 @@ export default function Student_Profile() {
             Manage your personal information and OJT details
           </span>
         </h1>
-        <button className="flex items-center gap-2 xs:py-2 xs:px-3 p-2 bg-blue-500 rounded-lg text-white xs:text-sm text-[10px]">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 xs:py-2 xs:px-3 p-2 bg-blue-500 rounded-lg text-white xs:text-sm text-[10px]"
+        >
           <Edit size={12} /> Edit profile
         </button>
       </div>
@@ -91,7 +95,9 @@ export default function Student_Profile() {
         <div className="flex flex-col flex-1/3 gap-4">
           <div className="flex flex-col items-center p-5 px-6 bg-white shadow-lg rounded-2xl gap-1">
             {/* Profile Picture */}
-            <div className="h-20 w-20 rounded-full bg-amber-400 flex items-center justify-center">{initialName}</div>
+            <div className="h-20 w-20 rounded-full bg-amber-400 flex items-center justify-center">
+              {initialName}
+            </div>
             {/* Full Name */}
             <h1 className="text-center mt-4 font-semibold text-lg">
               {studentData.name}
@@ -101,7 +107,9 @@ export default function Student_Profile() {
               {studentInfo?.course}
             </span>
             {/* Student id if applicable */}
-            <span className="text-xs ">Student ID : {studentInfo?.student_id}</span>
+            <span className="text-xs ">
+              Student ID : {studentInfo?.student_id}
+            </span>
             <span className="py-1 px-2 bg-[#dbeafe] text-[#3a77fc] rounded-lg text-xs mt-4">
               Active
             </span>
@@ -207,25 +215,36 @@ export default function Student_Profile() {
               {/* Total hours required */}
               <div className="flex flex-col self-end">
                 <p className="xs:text-md text-sm">Total Hours Completed</p>
-                <p className="xs:text-sm text-xs">{40} of {studentInfo?.hours_required || 0} required hours</p>
+                <p className="xs:text-sm text-xs">
+                  {40} of {studentInfo?.hours_required || 0} required hours
+                </p>
               </div>
               {/* Progress in percentage */}
               <div className="text-end">
                 <p className="xs:text-2xl text-lg font-semibold text-blue-600">
-                  {((40 /(studentInfo?.hours_required || 0))*100).toFixed(2)}%
+                  {((40 / (studentInfo?.hours_required || 0)) * 100).toFixed(2)}
+                  %
                 </p>
-                <p className="xs:text-sm text-xs">{(studentInfo?.hours_required || 0) - 0} hours remaining</p>
+                <p className="xs:text-sm text-xs">
+                  {(studentInfo?.hours_required || 0) - 0} hours remaining
+                </p>
               </div>
             </div>
             <div className="w-full bg-gray-300 rounded-full h-4 my-2">
               <div
                 className="bg-black h-4 rounded-full"
-                style={{ width: `${((40 /(studentInfo?.hours_required || 0))*100).toFixed(2)}%` }}
+                style={{
+                  width: `${(
+                    (40 / (studentInfo?.hours_required || 0)) *
+                    100
+                  ).toFixed(2)}%`,
+                }}
               ></div>
             </div>
             <div className="w-full flex sm:flex-row  flex-col items-center gap-3 mt-2">
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">
-                {(studentInfo?.hours_required || 0)/8} <span className="text-sm font-extralight">Days Left</span>
+                {(studentInfo?.hours_required || 0) / 8}{" "}
+                <span className="text-sm font-extralight">Days Left</span>
               </h1>
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">
                 4 <span className="text-sm font-extralight">Total Logs</span>
@@ -272,6 +291,64 @@ export default function Student_Profile() {
           </div>
         </div>
       </div>
+      
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Edit Profile</h2>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <form className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Full Name</label>
+                <input 
+                  type="text" 
+                  defaultValue={studentData.name}
+                  className="w-full p-2 border rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <input 
+                  type="email" 
+                  defaultValue={studentData.email}
+                  className="w-full p-2 border rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Phone</label>
+                <input 
+                  type="tel" 
+                  defaultValue={studentData.phone}
+                  className="w-full p-2 border rounded-lg"
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <button 
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 py-2 px-4 border rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="flex-1 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

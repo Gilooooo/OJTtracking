@@ -30,13 +30,10 @@ export default function NavBar({
   const [additionalInfo, setAdditionalInfo] = useState<Data>({});
   const [initialName , setInitialName] = useState<string>("");
 
-  const InitialNaming = () => {
+  useEffect(() => {
     const name = session?.user?.name?.trim();
     const t = name?.split(" ")
-    setInitialName((t?.[0]?.[0] || '') + (t?.[1]?.[0] || ''))
-  }
-  useEffect(() => {
-    InitialNaming();
+    setInitialName((t?.[0]?.[0] || '') + (t?.[1]?.[0] || ''));
     const fetchData = async () => {
       try {
         if (session?.user?.role == "student") {
