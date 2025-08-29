@@ -8,14 +8,49 @@ import {
   TrendingUp,
   User2,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+
+interface StudentData {
+  id: number;
+  student_id: string;
+  course: string;
+  school: string;
+  year_level: string;
+  hours_required: number;
+}
 
 export default function DashboardSection() {
+  const { data: session } = useSession();
+  const [studentData, setStudentData] = useState<StudentData | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch(
+            `/api/request/student?id=${session.user.id}`
+          );
+          const data = await response.json();
+          
+          if (response.ok) {
+            setStudentData(data);
+          } else {
+            console.error('Error:', data.error);
+          }
+        } catch (error) {
+          console.error('Fetch error:', error);
+        }
+      }
+    };
+    fetchData();
+  }, [session]);
   return (
     <section className="text-black space-y-3.5">
       {/* Ojt Progress Preview */}
       <div className="w-full bg-white p-4 rounded-2xl shadow-lg ">
         <h1 className="flex text-lg font-extralight items-center gap-2">
-          <span className="p-2 bg-[#dff2fe] rounded-xl text-[#0084d1]">
+          <span className="p-2 bg-[#dff2fe] rounded-xl text-[#0084d1]" onClick={() => console.log(studentData)}>
             <TrendingUp size={18} />
           </span>
           Ojt Progess Preview
@@ -27,20 +62,20 @@ export default function DashboardSection() {
           {/* Total hours required */}
           <div className="flex flex-col self-end">
             <p className="xs:text-md text-sm">Total Hours Completed</p>
-            <p className="xs:text-sm text-xs">350 of 600 required hours</p>
+            <p className="xs:text-sm text-xs">{40} of {studentData?.hours_required || 0} required hours</p>
           </div>
           {/* Progress in percentage */}
           <div className="text-end">
             <p className="xs:text-2xl text-lg font-semibold text-blue-600">
-              58%
+              {((40 /(studentData?.hours_required || 0))*100).toFixed(2)}%
             </p>
-            <p className="xs:text-sm text-xs">250 hours remaining</p>
+            <p className="xs:text-sm text-xs">{(studentData?.hours_required || 0) - 0} remaining</p>
           </div>
         </div>
         <div className="w-full bg-gray-300 rounded-full h-2 my-2">
           <div
             className="bg-black h-2 rounded-full"
-            style={{ width: "60%" }}
+            style={{ width: `${((40 /(studentData?.hours_required || 0))*100).toFixed(2)}%` }}
           ></div>
         </div>
         <div className="flex xs:flex-row flex-col xs:gap-0 gap-3 items-center border-t border-gray-200 py-4 mt-4 ">

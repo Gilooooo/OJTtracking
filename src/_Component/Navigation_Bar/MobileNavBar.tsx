@@ -1,4 +1,6 @@
 import { Bell, BookOpen, HomeIcon, LogOut, Menu, User2, X } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 interface MobileNavBarProps {
   isMenuOpen: boolean;
@@ -9,6 +11,19 @@ interface MobileNavBarProps {
 }
 
 export default function MobileNavBar({ isMenuOpen, setIsMenuOpen, activeSection, setActiveSection,  handleLogout }: MobileNavBarProps) {
+  const { data: session } = useSession();
+  const [initialName , setInitialName] = useState<string>("");
+
+  const InitialNaming = () => {
+    const name = session?.user?.name?.trim();
+    const t = name?.split(" ")
+    console.log(name?.split(" "))
+    setInitialName((t?.[0]?.[0] || '') + (t?.[1]?.[0] || ''))
+  }
+  useEffect(() =>{
+    InitialNaming();
+  })
+
   return (
     <>
       <nav className="md:hidden bg-white w-full text-black  ">
@@ -23,10 +38,10 @@ export default function MobileNavBar({ isMenuOpen, setIsMenuOpen, activeSection,
             <div className="p-4">
               <div className="bg-blue-500 p-4 rounded-2xl text-xs mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="py-3 px-4 rounded-full bg-amber-400">IT</div>
+                  <div className="h-14 w-14 rounded-full bg-amber-400 flex items-center justify-center">{initialName}</div>
                   <div className="flex flex-col">
-                    <span className="text-sm">Student Name</span>
-                    <span>Student Course</span>
+                    <span className="text-sm">{session?.user?.name}</span>
+                    {session?.user?.role.trim() == "student" ? <span>Student Course</span>: null}
                   </div>
                 </div>
                 <div className="flex justify-between items-center pt-3">

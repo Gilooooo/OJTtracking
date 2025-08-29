@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
       [email, fullName, username, phone, hashedPassword, accountType]
     )
     const accountId = accountResult.rows[0].id
+    console.log(roleData);
     // 2. Insert into role-specific table
     if (accountType === 'student') {
       await client.query(

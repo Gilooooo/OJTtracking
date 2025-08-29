@@ -39,16 +39,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             String(passwordChecking), 
             String(user.password).trim()
           )
-          console.log(user.password);
-          console.log(isValidPassword);
-          console.log(passwordChecking);
 
           if (isValidPassword) {
             return {
-              id: user.id.toString(),
-              email: user.email_add,
-              name: user.full_name,
-              role: user.account_type
+              id: user.id.toString().trim(),
+              email: user.email_add.trim(),
+              name: user.full_name.trim(),
+              role: user.account_type.trim()
             }
           }
 

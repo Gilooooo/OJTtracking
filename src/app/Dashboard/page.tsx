@@ -5,6 +5,7 @@ import DashboardSection from "@/_Component/Student/Dashboard/dashboardsection";
 import LogBook from "@/_Component/Student/Logs/Logbook";
 import Notification from "@/_Component/Student/Notifications/notification";
 import Profile from "@/_Component/Student/Profile/Profile";
+import Supervisor_Dashboard from "@/_Component/Supervisor/Dashboard/Supervisor_dashboard";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -19,6 +20,8 @@ export default function Dashboard() {
     if (status === 'loading') return;
     if (!session) {
       router.push('/Login');
+    } else {
+      console.log('Session data:', session);
     }
   }, [session, status, router]);
 
@@ -42,7 +45,7 @@ export default function Dashboard() {
   const renderSection = () => {
     switch (activeSection) {
       case "dashboard":
-        return <DashboardSection />;
+        return session.user?.role.trim()  == 'supervisor' ? <Supervisor_Dashboard/> : <DashboardSection />;
       case "logbook":
         return <LogBook />;
       case "profile":
@@ -50,7 +53,7 @@ export default function Dashboard() {
       case "notifications":
         return <Notification />;
       default:
-        return <DashboardSection />;
+        return session.user?.role.trim()  == 'supervisor' ? <Supervisor_Dashboard/> : <DashboardSection />;
     }
   };
 
