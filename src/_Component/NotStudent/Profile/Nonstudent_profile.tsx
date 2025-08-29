@@ -11,7 +11,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-export default function Supervisor_Profile() {
+export default function Nonstudent_Profile() {
   return (
     <main className="text-black space-y-3.5">
       <div className="flex items-center justify-between">
@@ -57,7 +57,7 @@ export default function Supervisor_Profile() {
                 <Phone size={18} className="text-gray-400" />
                 <span className="text-xs flex flex-col items-start text-gray-400">
                   Phone
-                  <span className="text-black font-semibold" >
+                  <span className="text-black font-semibold">
                     +63 9665907737
                   </span>
                 </span>

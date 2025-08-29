@@ -20,7 +20,7 @@ interface StudentData {
   hours_required: number;
 }
 
-export default function DashboardSection() {
+export default function Student_Dashboard() {
   const { data: session } = useSession();
   const [studentData, setStudentData] = useState<StudentData | null>(null);
 

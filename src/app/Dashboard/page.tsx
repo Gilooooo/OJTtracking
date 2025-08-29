@@ -1,11 +1,14 @@
 "use client";
 import MobileNavBar from "@/_Component/Navigation_Bar/MobileNavBar";
 import NavBar from "@/_Component/Navigation_Bar/NavBar";
-import DashboardSection from "@/_Component/Student/Dashboard/dashboardsection";
+import NonStudent_dashboard from "@/_Component/NotStudent/Dashboard/Nonstudent_dashboard";
+import Nonstudent_Profile from "@/_Component/NotStudent/Profile/Nonstudent_profile";
+import Student_Dashboard from "@/_Component/Student/Dashboard/Student_dashboard";
 import LogBook from "@/_Component/Student/Logs/Logbook";
 import Notification from "@/_Component/Student/Notifications/notification";
-import Profile from "@/_Component/Student/Profile/Profile";
+import Student_Profile from "@/_Component/Student/Profile/Student_Profile";
 import Supervisor_Dashboard from "@/_Component/Supervisor/Dashboard/Supervisor_dashboard";
+import Supervisor_Profile from "@/_Component/Supervisor/Profile/Supervisor_profile";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -43,17 +46,39 @@ export default function Dashboard() {
   }
 
   const renderSection = () => {
+    const role = session.user?.role;
+    
     switch (activeSection) {
       case "dashboard":
-        return session.user?.role.trim()  == 'supervisor' ? <Supervisor_Dashboard/> : <DashboardSection />;
+        if (role === 'supervisor') {
+          return <Supervisor_Dashboard/>;
+        } else if (role === 'student') {
+          return <Student_Dashboard />;
+        } else if (role === "non-student") {
+          return <NonStudent_dashboard/>;
+        }
+        break;
       case "logbook":
         return <LogBook />;
       case "profile":
-        return <Profile />;
+        if (role === 'supervisor') {
+          return <Supervisor_Profile/>; // Add Supervisor_Profile component here
+        } else if (role === 'student') {
+          return <Student_Profile />;
+        } else if (role === "non-student") {
+          return <Nonstudent_Profile/>; // Add NonStudent_Profile component here
+        }
+        break;
       case "notifications":
         return <Notification />;
       default:
-        return session.user?.role.trim()  == 'supervisor' ? <Supervisor_Dashboard/> : <DashboardSection />;
+        if (role === 'supervisor') {
+          return <Supervisor_Dashboard/>;
+        } else if (role === 'student') {
+          return <Student_Dashboard />;
+        } else if (role === "non-student") {
+          return <NonStudent_dashboard/>;
+        }
     }
   };
 

@@ -28,31 +28,40 @@ export default function NavBar({
   const { data: session } = useSession();
   const [information, setInformation] = useState<Information>({});
   const [additionalInfo, setAdditionalInfo] = useState<Data>({});
+  const [initialName , setInitialName] = useState<string>("");
+
+  const InitialNaming = () => {
+    const name = session?.user?.name?.trim();
+    const t = name?.split(" ")
+    setInitialName((t?.[0]?.[0] || '') + (t?.[1]?.[0] || ''))
+  }
   useEffect(() => {
+    InitialNaming();
     const fetchData = async () => {
-      try{
-        if (session?.user?.role == "student"){
-          const response = await fetch(`/api/request/student?id=${session?.user?.id}`);
+      try {
+        if (session?.user?.role == "student") {
+          const response = await fetch(
+            `/api/request/student?id=${session?.user?.id}`
+          );
           const data = await response.json();
           if (response.ok) {
-            setAdditionalInfo({studentCourse : data?.course});
+            setAdditionalInfo({ studentCourse: data?.course });
           } else {
-            console.error('Error:', data.error);
+            console.error("Error:", data.error);
           }
-        }
-        else if(session?.user?.role == "supervisor"){
-          const response = await fetch(`/api/request/supervisor?id=${session?.user?.id}`);
+        } else if (session?.user?.role == "supervisor") {
+          const response = await fetch(
+            `/api/request/supervisor?id=${session?.user?.id}`
+          );
           const data = await response.json();
-          console.log(data)
           if (response.ok) {
-            setAdditionalInfo({company: data?.company});
+            setAdditionalInfo({ company: data?.company });
           } else {
-            console.error('Error:', data.error);
+            console.error("Error:", data.error);
           }
         }
-           
-      }catch(error){
-        console.error('Fetch error:', error);
+      } catch (error) {
+        console.error("Fetch error:", error);
       }
     };
     fetchData();
@@ -75,12 +84,21 @@ export default function NavBar({
         </div>
         <div className="bg-blue-500 p-4 rounded-2xl text-xs">
           <div className="flex items-center gap-2">
-            <div className="py-3 px-4 rounded-full bg-amber-400" onClick={() => console.log(additionalInfo)}>IT</div>
+            <div
+              className="h-14 w-14 flex items-center justify-center rounded-full bg-amber-400"
+              onClick={() => console.log(additionalInfo)}
+            >
+              {initialName}
+            </div>
             <div className="flex flex-col">
               <span className="text-sm">{information.name}</span>
               {information.role === "supervisor" || "student" ? (
-                <span className="text-xs">{additionalInfo.company || additionalInfo.studentCourse}</span>
-              ) : <span className="text-xs">Non Student</span>}
+                <span className="text-xs">
+                  {additionalInfo.company || additionalInfo.studentCourse}
+                </span>
+              ) : (
+                <span className="text-xs">Non Student</span>
+              )}
             </div>
           </div>
           <div className="flex justify-between items-center pt-3">

@@ -17,7 +17,6 @@ export default function MobileNavBar({ isMenuOpen, setIsMenuOpen, activeSection,
   const InitialNaming = () => {
     const name = session?.user?.name?.trim();
     const t = name?.split(" ")
-    console.log(name?.split(" "))
     setInitialName((t?.[0]?.[0] || '') + (t?.[1]?.[0] || ''))
   }
   useEffect(() =>{

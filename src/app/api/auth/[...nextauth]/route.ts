@@ -25,7 +25,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         
         try {
           const result = await client.query(
-            'SELECT id, email_add, full_name, account_type, password FROM accounts WHERE email_add = $1',
+            'SELECT * FROM accounts WHERE email_add = $1',
             [credentials.email]
           )
           
@@ -45,7 +45,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               id: user.id.toString().trim(),
               email: user.email_add.trim(),
               name: user.full_name.trim(),
-              role: user.account_type.trim()
+              role: user.account_type.trim(),
+              phone: user.phone_number.trim()
             }
           }
 
@@ -63,13 +64,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.role = user?.role
+        token.phone = user?.phone
       }
       return token
     },
     async session({ session, token }) {
       if (token && session.user) {
-        ;(session.user as { id: string; role: string }).id = token.sub as string
-        ;(session.user as { id: string; role: string }).role = token.role as string
+        ;(session.user as { id: string; role: string; phone: string }).id = token.sub as string
+        ;(session.user as { id: string; role: string; phone: string }).role = token.role as string
+        ;(session.user as { id: string; role: string; phone: string }).phone = token.phone as string
       }
       return session
     }
