@@ -10,18 +10,24 @@ interface MobileNavBarProps {
   handleLogout: () => void;
 }
 
-export default function MobileNavBar({ isMenuOpen, setIsMenuOpen, activeSection, setActiveSection,  handleLogout }: MobileNavBarProps) {
+export default function MobileNavBar({
+  isMenuOpen,
+  setIsMenuOpen,
+  activeSection,
+  setActiveSection,
+  handleLogout,
+}: MobileNavBarProps) {
   const { data: session } = useSession();
-  const [initialName , setInitialName] = useState<string>("");
+  const [initialName, setInitialName] = useState<string>("");
 
   const InitialNaming = () => {
     const name = session?.user?.name?.trim();
-    const t = name?.split(" ")
-    setInitialName((t?.[0]?.[0] || '') + (t?.[1]?.[0] || ''))
-  }
-  useEffect(() =>{
+    const t = name?.split(" ");
+    setInitialName((t?.[0]?.[0] || "") + (t?.[1]?.[0] || ""));
+  };
+  useEffect(() => {
     InitialNaming();
-  })
+  });
 
   return (
     <>
@@ -37,10 +43,14 @@ export default function MobileNavBar({ isMenuOpen, setIsMenuOpen, activeSection,
             <div className="p-4">
               <div className="bg-blue-500 p-4 rounded-2xl text-xs mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="h-14 w-14 rounded-full bg-amber-400 flex items-center justify-center">{initialName}</div>
+                  <div className="h-14 w-14 rounded-full bg-amber-400 flex items-center justify-center">
+                    {initialName}
+                  </div>
                   <div className="flex flex-col">
                     <span className="text-sm">{session?.user?.name}</span>
-                    {session?.user?.role.trim() == "student" ? <span>Student Course</span>: null}
+                    {session?.user?.role.trim() == "student" ? (
+                      <span>Student Course</span>
+                    ) : null}
                   </div>
                 </div>
                 <div className="flex justify-between items-center pt-3">
@@ -85,17 +95,21 @@ export default function MobileNavBar({ isMenuOpen, setIsMenuOpen, activeSection,
                   <User2 size={14} />
                   <span className="text-sm">Profile</span>
                 </li>
-                <li
-                  className={`w-full rounded-lg py-2 px-3 text-black flex items-center gap-2 cursor-pointer ${
-                    activeSection === "notifications"
-                      ? "border border-[#bce8fe] bg-[#f0f9ff]"
-                      : "hover:bg-gray-100"
-                  }`}
-                  onClick={() => setActiveSection("notifications")}
-                >
-                  <Bell size={14} />
-                  <span className="text-sm">Notifications</span>
-                </li>
+                {session?.user.role === "non-student" ? (
+                  ""
+                ) : (
+                  <li
+                    className={`w-full rounded-lg py-2 px-3 text-black flex items-center gap-2 cursor-pointer ${
+                      activeSection === "notifications"
+                        ? "border border-[#bce8fe] bg-[#f0f9ff]"
+                        : "hover:bg-gray-100"
+                    }`}
+                    onClick={() => setActiveSection("notifications")}
+                  >
+                    <Bell size={14} />
+                    <span className="text-sm">Notifications</span>
+                  </li>
+                )}
                 <li
                   className="w-full rounded-lg py-2 px-3 text-red-500 flex items-center gap-2 cursor-pointer hover:bg-red-50"
                   onClick={handleLogout}

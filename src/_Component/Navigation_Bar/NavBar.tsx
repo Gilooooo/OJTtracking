@@ -144,17 +144,21 @@ export default function NavBar({
               <User2 size={14} />
               <span className="text-sm">Profile</span>
             </li>
-            <li
-              className={`w-full rounded-lg py-2 px-3 text-black flex items-center gap-2 cursor-pointer ${
-                activeSection === "notifications"
-                  ? "border border-[#bce8fe] bg-[#f0f9ff]"
-                  : "hover:bg-gray-100"
-              }`}
-              onClick={() => setActiveSection("notifications")}
-            >
-              <Bell size={14} />
-              <span className="text-sm">Notifications</span>
-            </li>
+            {session?.user.role === "non-student" ? (
+              ""
+            ) : (
+              <li
+                className={`w-full rounded-lg py-2 px-3 text-black flex items-center gap-2 cursor-pointer ${
+                  activeSection === "notifications"
+                    ? "border border-[#bce8fe] bg-[#f0f9ff]"
+                    : "hover:bg-gray-100"
+                }`}
+                onClick={() => setActiveSection("notifications")}
+              >
+                <Bell size={14} />
+                <span className="text-sm">Notifications</span>
+              </li>
+            )}
             <li
               className="w-full rounded-lg py-2 px-3 text-red-500 flex items-center gap-2 cursor-pointer hover:bg-red-50"
               onClick={handleLogout}
