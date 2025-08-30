@@ -1,6 +1,8 @@
 import {
   Award,
-  Building,
+  ChevronDown,
+  ChevronUp,
+  // Building,
   Clock,
   Edit,
   GraduationCap,
@@ -35,8 +37,8 @@ export default function Student_Profile() {
   const [studentData, setStudentData] = useState<Data>({});
   const [initialName, setInitialName] = useState<string>("");
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [dropdown, setDropdown] = useState<boolean>(false);
   useEffect(() => {
     // Initial Name Function
     const InitialNaming = () => {
@@ -50,7 +52,7 @@ export default function Student_Profile() {
       if (session?.user?.id) {
         try {
           const response = await fetch(
-            `/api/request/student?id=${session.user.id}`
+            `/api/request/student/info?id=${session.user.id}`
           );
           const data = await response.json();
 
@@ -84,7 +86,7 @@ export default function Student_Profile() {
             Manage your personal information and OJT details
           </span>
         </h1>
-        <button 
+        <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 xs:py-2 xs:px-3 p-2 bg-blue-500 rounded-lg text-white xs:text-sm text-[10px]"
         >
@@ -153,16 +155,18 @@ export default function Student_Profile() {
               <span className="text-xs flex flex-col items-start text-gray-400">
                 Course
                 <span className="text-black font-semibold">
-                  Bachelor of Science in Computer Science
+                  {studentInfo?.course}
                 </span>
               </span>
               <span className="text-xs flex flex-col items-start text-gray-400">
                 Year Level
-                <span className="text-black font-semibold">4th Year</span>
+                <span className="text-black font-semibold">
+                  {studentInfo?.year_level}
+                </span>
               </span>
               <span className="text-xs flex flex-col items-start text-gray-400">
                 GWA
-                <span className="text-black font-semibold">1.0</span>
+                <span className="text-black font-semibold">{0}</span>
               </span>
             </div>
           </div>
@@ -254,7 +258,7 @@ export default function Student_Profile() {
               </h1>
             </div>
           </div>
-          <div className="flex flex-col items-center p-5 px-6 bg-white shadow-lg rounded-2xl gap-1">
+          {/* <div className="flex flex-col items-center p-5 px-6 bg-white shadow-lg rounded-2xl gap-1">
             <h1 className="flex items-center gap-2 w-full text-lg">
               <Building size={18} className="text-[#3a77fc]" /> Company
               Information
@@ -273,14 +277,14 @@ export default function Student_Profile() {
                 <p className="text-xs text-gray-500">iron.man@gmail.com</p>
                 <p className="text-xs text-gray-500">+63 999999999</p>
               </div>
-              {/* Date Start */}
+              {/* Date Start 
               <div>
                 <span className="text-xs text-gray-400">Start Date</span>
                 <h1 className="text-black font-semibold text-sm">
                   January 15, 2025
                 </h1>
               </div>
-              {/* Date End */}
+              {/* Date End 
               <div>
                 <span className="text-xs text-gray-400">End Date</span>
                 <h1 className="text-black font-semibold text-sm">
@@ -288,57 +292,118 @@ export default function Student_Profile() {
                 </h1>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
-      
+
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Edit Profile</h2>
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <X size={20} />
               </button>
             </div>
-            <form className="space-y-4">
+            <form className="space-y-2">
               <div>
-                <label className="block text-sm font-medium mb-1">Full Name</label>
-                <input 
-                  type="text" 
+                <label className="block text-sm font-medium mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
                   defaultValue={studentData.name}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full py-1 px-3 border rounded-lg focus:outline-none"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Email</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   defaultValue={studentData.email}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full py-1 px-3 border rounded-lg focus:outline-none"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Phone</label>
-                <input 
-                  type="tel" 
+                <input
+                  type="tel"
                   defaultValue={studentData.phone}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full py-1 px-3 border rounded-lg focus:outline-none"
                 />
               </div>
+              <div className="max-w-md -mx-6">
+                {dropdown ? (
+                  <button
+                    className="flex items-center gap-2 w-full justify-center bg-gray-100 py-1 text-sm"
+                    onClick={(e) => {
+                      setDropdown(!dropdown);
+                      e.preventDefault();
+                    }}
+                  >
+                    Academic Information <ChevronDown />
+                  </button>
+                ) : (
+                  <button
+                    className="flex items-center gap-2 w-full justify-center bg-gray-100 py-1 text-sm"
+                    onClick={(e) => {
+                      setDropdown(!dropdown);
+                      e.preventDefault();
+                    }}
+                  >
+                    Academic Information <ChevronUp />
+                  </button>
+                )}
+              </div>
+              <div
+                className={`overflow-hidden transition-all duration-300 ${
+                  dropdown ? "max-h-lvh opacity-100" : "max-h-0 opacity-0"
+                }`}
+              >
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Course
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue={studentInfo?.course.trim()}
+                    className="w-full py-1 px-3 border rounded-lg focus:outline-none"
+                  />
+                </div>
+                      <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Year Level
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue={studentInfo?.year_level.trim()}
+                    className="w-full py-1 px-3 border rounded-lg focus:outline-none"
+                  />
+                </div>
+                      <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Gwa
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue={0}
+                    className="w-full py-1 px-3 border rounded-lg focus:outline-none"
+                  />
+                </div>
+              </div>
               <div className="flex gap-2 pt-4">
-                <button 
+                <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   className="flex-1 py-2 px-4 border rounded-lg hover:bg-gray-50"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   type="submit"
                   className="flex-1 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
                 >

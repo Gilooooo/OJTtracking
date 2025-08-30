@@ -28,17 +28,21 @@ export default function NavBar({
   const { data: session } = useSession();
   const [information, setInformation] = useState<Information>({});
   const [additionalInfo, setAdditionalInfo] = useState<Data>({});
-  const [initialName , setInitialName] = useState<string>("");
+  const [initialName, setInitialName] = useState<string>("");
+  const capitalizeFirst = () =>
+    information.role
+      ? information.role[0].toUpperCase() + information.role.slice(1)
+      : "";
 
   useEffect(() => {
-    const name = session?.user?.name?.trim();
-    const t = name?.split(" ")
-    setInitialName((t?.[0]?.[0] || '') + (t?.[1]?.[0] || ''));
+    const name = session?.user?.name;
+    const t = name?.split(" ");
+    setInitialName((t?.[0]?.[0] || "") + (t?.[1]?.[0] || ""));
     const fetchData = async () => {
       try {
         if (session?.user?.role == "student") {
           const response = await fetch(
-            `/api/request/student?id=${session?.user?.id}`
+            `/api/request/student/info?id=${session?.user?.id}`
           );
           const data = await response.json();
           if (response.ok) {
@@ -76,7 +80,7 @@ export default function NavBar({
         <div className="px-3 py-4 flex flex-col">
           <span>Ojt Tracking</span>
           <span className="text-xs text-gray-600">
-            {information.role} Portal
+            {capitalizeFirst()} Portal
           </span>
         </div>
         <div className="bg-blue-500 p-4 rounded-2xl text-xs">

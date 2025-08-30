@@ -1,6 +1,6 @@
 import {
   BookOpen,
-  Building,
+  // Building,
   ChevronRight,
   CircleCheckBig,
   Clock,
@@ -29,7 +29,7 @@ export default function Student_Dashboard() {
       if (session?.user?.id) {
         try {
           const response = await fetch(
-            `/api/request/student?id=${session.user.id}`
+            `/api/request/student/info?id=${session.user.id}`
           );
           const data = await response.json();
           
@@ -78,8 +78,8 @@ export default function Student_Dashboard() {
             style={{ width: `${((40 /(studentData?.hours_required || 0))*100).toFixed(2)}%` }}
           ></div>
         </div>
-        <div className="flex xs:flex-row flex-col xs:gap-0 gap-3 items-center border-t border-gray-200 py-4 mt-4 ">
-          {/* Company Name */}
+        {/* <div className="flex xs:flex-row flex-col xs:gap-0 gap-3 items-center border-t border-gray-200 py-4 mt-4 ">
+           Company Name 
           <div className="flex items-center gap-2 flex-1/2 w-full">
             <span className="p-3 bg-gray-300 rounded-2xl text-[#787a7e]">
               <Building size={18} />
@@ -89,7 +89,7 @@ export default function Student_Dashboard() {
               <span className="sm:text-lg text-md">Tech Corporation</span>
             </div>
           </div>
-          {/* Supervisor */}
+           Supervisor 
           <div className="flex items-center gap-2 flex-1/2 w-full">
             <span className="p-3 bg-gray-300 rounded-2xl text-[#787a7e]">
               <User2 size={18} />
@@ -99,7 +99,7 @@ export default function Student_Dashboard() {
               <span className="sm:text-lg text-md">Cruz Valdez</span>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
       {/* Status */}
       <div className="flex xs:flex-row flex-col items-center gap-3 w-full bg-[#f8fafc] self-stretch">
