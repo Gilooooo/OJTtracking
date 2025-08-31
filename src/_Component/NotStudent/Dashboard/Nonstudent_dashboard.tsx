@@ -23,7 +23,7 @@ export default function NonStudent_dashboard() {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `/api/request/non_student?id=${session?.user?.id}`
+          `/api/request/non_student/info?id=${session?.user?.id}`
         );
         const data = await response.json();
         if (response.ok) {

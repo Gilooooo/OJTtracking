@@ -28,7 +28,7 @@ export default function Nonstudent_Profile() {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `/api/request/non_student?id=${session?.user.id}`
+          `/api/request/non_student/info?id=${session?.user.id}`
         );
         console.log(response);
         const data = await response.json();

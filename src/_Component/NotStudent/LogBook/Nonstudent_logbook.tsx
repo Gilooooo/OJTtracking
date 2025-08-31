@@ -10,14 +10,63 @@ import {
   Search,
   Trash2,
   X,
-  Upload,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 
 export default function NonStudent_LogBook(){
+  const {data : session} = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tasks, setTasks] = useState<string[]>([]);
   const [currentTask, setCurrentTask] = useState("");
+  const [formData, setFormData] = useState({
+    date: "",
+    hours_worked: "",
+    entry_type: "daily",
+    title: "",
+    description: "",
+    attachments: [] as string[]
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const progress = {
+      date: formData.date,
+      hours_worked: parseInt(formData.hours_worked),
+      entry_type: formData.entry_type,
+      title: formData.title,
+      description: formData.description,
+      tasks_completed: tasks,
+      attachments: formData.attachments
+    };
+
+    const requestBody = {
+      email_add: session?.user?.email,
+      account_type: "non-student",
+      user_name: session?.user?.name,
+      progress: progress
+    };
+
+    try {
+      const response = await fetch('/api/request/non_student/logbook', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+      
+      if (response.ok) {
+        setIsModalOpen(false);
+        setTasks([]);
+        setFormData({ date: "", hours_worked: "", entry_type: "daily", title: "", description: "", attachments: [] });
+      }
+    } catch (error) {
+      console.error('Error saving log:', error);
+    }
+  };
+
+
+
     return(
          <main className="text-black space-y-3.5">
       <div className="flex items-center justify-between gap-2">
@@ -140,31 +189,58 @@ export default function NonStudent_LogBook(){
                 <X size={20} />
               </button>
             </div>
-            <form className="space-y-2">
+            <form onSubmit={handleSubmit} className="space-y-2">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Date</label>
-                  <input type="date" className="w-full p-2 border rounded-lg" />
+                  <input 
+                    type="date" 
+                    value={formData.date}
+                    onChange={(e) => setFormData({...formData, date: e.target.value})}
+                    className="w-full p-2 border rounded-lg" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Hours Work</label>
-                  <input type="number" placeholder="8" className="w-full p-2 border rounded-lg" />
+                  <input 
+                    type="number" 
+                    placeholder="8" 
+                    value={formData.hours_worked}
+                    onChange={(e) => setFormData({...formData, hours_worked: e.target.value})}
+                    className="w-full p-2 border rounded-lg" 
+                  />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Entry Type</label>
-                <select className="w-full p-2 border rounded-lg">
+                <select 
+                  value={formData.entry_type}
+                  onChange={(e) => setFormData({...formData, entry_type: e.target.value})}
+                  className="w-full p-2 border rounded-lg"
+                >
                   <option value="daily">Daily Log</option>
                   <option value="weekly">Weekly Log</option>
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Title</label>
-                <input type="text" placeholder="Enter log title" className="w-full p-2 border rounded-lg" />
+                <input 
+                  type="text" 
+                  placeholder="Enter log title" 
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  className="w-full p-2 border rounded-lg" 
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Detailed Description</label>
-                <textarea rows={2} placeholder="Describe your activities..." className="w-full p-2 border rounded-lg resize-none" />
+                <textarea 
+                  rows={2} 
+                  placeholder="Describe your activities..." 
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  className="w-full p-2 border rounded-lg resize-none" 
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Task Completed</label>
@@ -208,14 +284,23 @@ export default function NonStudent_LogBook(){
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Attachment</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <Upload size={24} className="mx-auto mb-2 text-gray-400" />
-                  <p className="text-sm text-gray-500 mb-2">Drag and drop files here or</p>
-                  <input type="file" multiple className="hidden" id="file-upload" />
-                  <label htmlFor="file-upload" className="text-blue-500 hover:text-blue-700 cursor-pointer">
-                    Choose files
-                  </label>
-                </div>
+                <input 
+                  type="file" 
+                  multiple 
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      const fileNames = Array.from(e.target.files).map(f => f.name);
+                      setFormData({...formData, attachments: fileNames});
+                    }
+                  }}
+                  className="w-full p-2 border rounded-lg text-sm" 
+                />
+                {formData.attachments.length > 0 && (
+                  <div className="mt-2 text-sm text-gray-600">
+                    Selected files: {formData.attachments.join(", ")}
+                  </div>
+                )}
               </div>
               <div className="flex gap-2 pt-4">
                 <button 
