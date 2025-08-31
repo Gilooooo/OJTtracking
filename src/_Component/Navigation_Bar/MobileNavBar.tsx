@@ -1,4 +1,4 @@
-import { Bell, BookOpen, HomeIcon, LogOut, Menu, User2, X } from "lucide-react";
+import { Bell, BookOpen, HomeIcon, LogOut, Menu, User2, Users2, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
@@ -98,17 +98,31 @@ export default function MobileNavBar({
                 {session?.user.role === "non-student" ? (
                   ""
                 ) : (
-                  <li
-                    className={`w-full rounded-lg py-2 px-3 text-black flex items-center gap-2 cursor-pointer ${
-                      activeSection === "notifications"
-                        ? "border border-[#bce8fe] bg-[#f0f9ff]"
-                        : "hover:bg-gray-100"
-                    }`}
-                    onClick={() => setActiveSection("notifications")}
-                  >
-                    <Bell size={14} />
-                    <span className="text-sm">Notifications</span>
-                  </li>
+                  <>
+                    <li
+                      className={`w-full rounded-lg py-2 px-3 text-black flex items-center gap-2 cursor-pointer ${
+                        activeSection === "room"
+                          ? "border border-[#bce8fe] bg-[#f0f9ff]"
+                          : "hover:bg-gray-100"
+                      }`}
+                      onClick={() => setActiveSection("room")}
+                    >
+                      <Users2 size={14} />
+                      <span className="text-sm">Room</span>
+                    </li>
+
+                    <li
+                      className={`w-full rounded-lg py-2 px-3 text-black flex items-center gap-2 cursor-pointer ${
+                        activeSection === "notifications"
+                          ? "border border-[#bce8fe] bg-[#f0f9ff]"
+                          : "hover:bg-gray-100"
+                      }`}
+                      onClick={() => setActiveSection("notifications")}
+                    >
+                      <Bell size={14} />
+                      <span className="text-sm">Notifications</span>
+                    </li>
+                  </>
                 )}
                 <li
                   className="w-full rounded-lg py-2 px-3 text-red-500 flex items-center gap-2 cursor-pointer hover:bg-red-50"

@@ -345,7 +345,7 @@ export default function Student_Profile() {
                       e.preventDefault();
                     }}
                   >
-                    Academic Information <ChevronDown />
+                    Academic Information <ChevronUp />
                   </button>
                 ) : (
                   <button
@@ -355,7 +355,7 @@ export default function Student_Profile() {
                       e.preventDefault();
                     }}
                   >
-                    Academic Information <ChevronUp />
+                    Academic Information <ChevronDown />
                   </button>
                 )}
               </div>

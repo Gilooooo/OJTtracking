@@ -7,8 +7,10 @@ import Student_Dashboard from "@/_Component/Student/Dashboard/Student_dashboard"
 import LogBook from "@/_Component/Student/Logs/Logbook";
 import Notification from "@/_Component/Student/Notifications/notification";
 import Student_Profile from "@/_Component/Student/Profile/Student_Profile";
+import Student_Room from "@/_Component/Student/Room/Student_room";
 import Supervisor_Dashboard from "@/_Component/Supervisor/Dashboard/Supervisor_dashboard";
 import Supervisor_Profile from "@/_Component/Supervisor/Profile/Supervisor_profile";
+import Supervisor_Room from "@/_Component/Supervisor/Room/Supervisor_room";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -20,11 +22,11 @@ export default function Dashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'loading') return;
+    if (status === "loading") return;
     if (!session) {
-      router.push('/Login');
+      router.push("/Login");
     } else {
-      console.log('Session data:', session);
+      console.log("Session data:", session);
     }
   }, [session, status, router]);
 
@@ -33,7 +35,7 @@ export default function Dashboard() {
     router.push("/");
   };
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-lg">Loading...</div>
@@ -47,37 +49,44 @@ export default function Dashboard() {
 
   const renderSection = () => {
     const role = session.user?.role;
-    
+
     switch (activeSection) {
       case "dashboard":
-        if (role === 'supervisor') {
-          return <Supervisor_Dashboard/>;
-        } else if (role === 'student') {
+        if (role === "supervisor") {
+          return <Supervisor_Dashboard />;
+        } else if (role === "student") {
           return <Student_Dashboard />;
         } else if (role === "non-student") {
-          return <NonStudent_dashboard/>;
+          return <NonStudent_dashboard />;
         }
         break;
       case "logbook":
         return <LogBook />;
       case "profile":
-        if (role === 'supervisor') {
-          return <Supervisor_Profile/>; // Add Supervisor_Profile component here
-        } else if (role === 'student') {
+        if (role === "supervisor") {
+          return <Supervisor_Profile />; // Add Supervisor_Profile component here
+        } else if (role === "student") {
           return <Student_Profile />;
         } else if (role === "non-student") {
-          return <Nonstudent_Profile/>; // Add NonStudent_Profile component here
+          return <Nonstudent_Profile />; // Add NonStudent_Profile component here
         }
         break;
       case "notifications":
         return <Notification />;
+      case "room":
+        if (role === "student") {
+          return <Student_Room />;
+        } else if (role === "supervisor") {
+          return <Supervisor_Room />;
+        }
+        break;
       default:
-        if (role === 'supervisor') {
-          return <Supervisor_Dashboard/>;
-        } else if (role === 'student') {
+        if (role === "supervisor") {
+          return <Supervisor_Dashboard />;
+        } else if (role === "student") {
           return <Student_Dashboard />;
         } else if (role === "non-student") {
-          return <NonStudent_dashboard/>;
+          return <NonStudent_dashboard />;
         }
     }
   };
@@ -85,7 +94,7 @@ export default function Dashboard() {
   return (
     <main className="w-full h-screen">
       {/* Mobile Hamburger Nav */}
-      <MobileNavBar 
+      <MobileNavBar
         isMenuOpen={isMenuOpen}
         setIsMenuOpen={setIsMenuOpen}
         activeSection={activeSection}
@@ -93,7 +102,7 @@ export default function Dashboard() {
         handleLogout={handleLogout}
       />
       <section className="flex h-full text-black">
-        <NavBar 
+        <NavBar
           activeSection={activeSection}
           setActiveSection={setActiveSection}
           handleLogout={handleLogout}
