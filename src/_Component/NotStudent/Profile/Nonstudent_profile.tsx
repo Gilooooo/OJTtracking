@@ -1,4 +1,4 @@
-import { Clock, Edit, Mail, MapPin, Phone } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Edit, Mail, MapPin, Phone, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
@@ -9,8 +9,14 @@ interface Data {
 
 export default function Nonstudent_Profile() {
   const [initialName, setInitialName] = useState<string>("");
+  const [dropdown, setDropdown] = useState<boolean>(false);
   const { data: session } = useSession();
   const [personData, setPersonData] = useState<Data | null>({});
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  const handleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  }
 
   useEffect(() => {
     const InitialNaming = () => {
@@ -53,7 +59,7 @@ export default function Nonstudent_Profile() {
             Manage your personal information and OJT details
           </span>
         </h1>
-        <button className="flex items-center gap-2 xs:py-2 xs:px-3 p-2 bg-blue-500 rounded-lg text-white xs:text-sm text-[10px]">
+        <button className="flex items-center gap-2 xs:py-2 xs:px-3 p-2 bg-blue-500 rounded-lg text-white xs:text-sm text-[10px]" onClick={handleModal}>
           <Edit size={12} /> Edit profile
         </button>
       </div>
@@ -144,6 +150,87 @@ export default function Nonstudent_Profile() {
           </div>
         </div>
       </div>
+       {isModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Edit Profile</h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <form className="space-y-2">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  defaultValue={session?.user?.name || ""}
+                  className="w-full py-1 px-3 border rounded-lg focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <input
+                  type="email"
+                  defaultValue={session?.user?.email || ""}
+                  className="w-full py-1 px-3 border rounded-lg focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Phone</label>
+                <input
+                  type="tel"
+                  defaultValue={session?.user?.phone || ""}
+                  className="w-full py-1 px-3 border rounded-lg focus:outline-none"
+                />
+              </div>
+              <div className="max-w-md -mx-6">
+                {dropdown ? (
+                  <button
+                    className="flex items-center gap-2 w-full justify-center bg-gray-100 py-1 text-sm"
+                    onClick={(e) => {
+                      setDropdown(!dropdown);
+                      e.preventDefault();
+                    }}
+                  >
+                    Academic Information <ChevronUp />
+                  </button>
+                ) : (
+                  <button
+                    className="flex items-center gap-2 w-full justify-center bg-gray-100 py-1 text-sm"
+                    onClick={(e) => {
+                      setDropdown(!dropdown);
+                      e.preventDefault();
+                    }}
+                  >
+                    Academic Information <ChevronDown />
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-2 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 py-2 px-4 border rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

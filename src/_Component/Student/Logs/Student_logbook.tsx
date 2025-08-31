@@ -10,7 +10,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-export default function LogBook() {
+export default function Student_LogBook() {
   return (
     <main className="text-black space-y-3.5">
       <div className="flex items-center justify-between gap-2">

@@ -2,9 +2,10 @@
 import MobileNavBar from "@/_Component/Navigation_Bar/MobileNavBar";
 import NavBar from "@/_Component/Navigation_Bar/NavBar";
 import NonStudent_dashboard from "@/_Component/NotStudent/Dashboard/Nonstudent_dashboard";
+import NonStudent_LogBook from "@/_Component/NotStudent/LogBook/Nonstudent_logbook";
 import Nonstudent_Profile from "@/_Component/NotStudent/Profile/Nonstudent_profile";
 import Student_Dashboard from "@/_Component/Student/Dashboard/Student_dashboard";
-import LogBook from "@/_Component/Student/Logs/Logbook";
+import Student_LogBook from "@/_Component/Student/Logs/Student_logbook";
 import Notification from "@/_Component/Student/Notifications/notification";
 import Student_Profile from "@/_Component/Student/Profile/Student_Profile";
 import Student_Room from "@/_Component/Student/Room/Student_room";
@@ -61,14 +62,22 @@ export default function Dashboard() {
         }
         break;
       case "logbook":
-        return <LogBook />;
+        if (role === "supervisor") {
+        }
+        else if (role === "student") {
+          return <Student_LogBook/>;
+        }
+        else if(role === "non-student"){
+          return <NonStudent_LogBook/>
+        }
+        
       case "profile":
         if (role === "supervisor") {
-          return <Supervisor_Profile />; // Add Supervisor_Profile component here
+          return <Supervisor_Profile />;
         } else if (role === "student") {
           return <Student_Profile />;
         } else if (role === "non-student") {
-          return <Nonstudent_Profile />; // Add NonStudent_Profile component here
+          return <Nonstudent_Profile />;
         }
         break;
       case "notifications":
