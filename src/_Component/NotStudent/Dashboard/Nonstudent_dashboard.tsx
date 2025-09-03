@@ -14,20 +14,27 @@ interface Info {
   id?: string;
   hours_required?: number;
 }
+interface Total {
+  total_hours?: number;
+  total_logs?: number;
+}
 
 export default function NonStudent_dashboard() {
   const { data: session } = useSession();
   const [userInfo, setUserInfo] = useState<Info>({});
-
+  const [logtotals, setLogTotals] = useState<Total>({});
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `/api/request/non_student/info?id=${session?.user?.id}`
+          `/api/request/non_student/info?&id=${session?.user?.id}`
         );
+        const responseTotal = await fetch(`/api/request/non_student/log_totals?email=${session?.user?.email}`)
         const data = await response.json();
-        if (response.ok) {
+        const dataTotal = await responseTotal.json();
+        if (response.ok || responseTotal.ok) {
           setUserInfo(data);
+          setLogTotals(dataTotal)
         } else {
           console.error("Problem Fetching data", data.error);
         }
@@ -46,7 +53,7 @@ export default function NonStudent_dashboard() {
         <h1 className="flex text-lg font-extralight items-center gap-2">
           <span
             className="p-2 bg-[#dff2fe] rounded-xl text-[#0084d1]"
-            onClick={() => console.log(userInfo)}
+            onClick={() => console.log(logtotals)}
           >
             <TrendingUp size={18} />
           </span>
@@ -60,16 +67,23 @@ export default function NonStudent_dashboard() {
           <div className="flex flex-col self-end">
             <p className="xs:text-md text-sm">Total Hours Completed</p>
             <p className="xs:text-sm text-xs">
-              {40} of {userInfo?.hours_required || 0} required hours
+              {logtotals.total_hours} of {userInfo?.hours_required || 0}{" "}
+              required hours
             </p>
           </div>
           {/* Progress in percentage */}
           <div className="text-end">
             <p className="xs:text-2xl text-lg font-semibold text-blue-600">
-              {((40 / (userInfo?.hours_required || 0)) * 100).toFixed(2)}%
+              {(
+                ((logtotals.total_hours || 0) /
+                  (userInfo?.hours_required || 0)) *
+                100
+              ).toFixed(2)}
+              %
             </p>
             <p className="xs:text-sm text-xs">
-              {(userInfo?.hours_required || 0) - 0} remaining
+              {(userInfo?.hours_required || 0) - (logtotals.total_hours || 0)}{" "}
+              remaining
             </p>
           </div>
         </div>
@@ -77,9 +91,11 @@ export default function NonStudent_dashboard() {
           <div
             className="bg-black h-2 rounded-full"
             style={{
-              width: `${((40 / (userInfo?.hours_required || 0)) * 100).toFixed(
-                2
-              )}%`,
+              width: `${(
+                ((logtotals.total_hours || 0) /
+                  (userInfo?.hours_required || 0)) *
+                100
+              ).toFixed(2)}%`,
             }}
           ></div>
         </div>
@@ -119,7 +135,13 @@ export default function NonStudent_dashboard() {
               <div className="w-full bg-gray-300 rounded-full h-1 ">
                 <div
                   className="bg-black h-1 rounded-full"
-                  style={{ width: "60%" }}
+                  style={{
+                    width: `${(
+                      ((logtotals.total_hours || 0) /
+                        (userInfo?.hours_required || 0)) *
+                      100
+                    ).toFixed(2)}%`,
+                  }}
                 ></div>
               </div>
             </div>
@@ -128,10 +150,12 @@ export default function NonStudent_dashboard() {
           <div className="flex flex-col py-2 text-[#787a7e] ">
             <span className="text-black text-sm">Hours This Week</span>
             <h1 className="flex items-end gap-1">
-              <span className="text-2xl text-black">30</span>
+              <span className="text-2xl text-black">
+                {logtotals.total_hours || 0}
+              </span>
               <span className="text-xs">/ 40</span>
             </h1>
-            <span className="text-[10px]">10 Hours remaining</span>
+            <span className="text-[10px]">{(userInfo?.hours_required || 0) - (logtotals.total_hours || 0)} Hours remaining</span>
           </div>
         </div>
         {/* Logs */}
@@ -145,7 +169,7 @@ export default function NonStudent_dashboard() {
           <div className="flex flex-col py-2 text-[#787a7e] ">
             <span className="text-black text-sm">Recent Log</span>
             <h1 className="flex items-end gap-1">
-              <span className="text-2xl text-black">8</span>
+              <span className="text-2xl text-black">{logtotals.total_logs}</span>
               <span className="text-xs">This month</span>
             </h1>
             <span className="text-[10px]">2 pending approval</span>

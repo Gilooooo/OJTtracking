@@ -12,7 +12,13 @@ import {
   X,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+interface FileAttachment {
+  name: string;
+  type: string;
+  data: string;
+}
 
 interface FormData {
   date: string;
@@ -20,7 +26,7 @@ interface FormData {
   entry_type: string;
   title: string;
   description: string;
-  attachments: string[];
+  attachments: FileAttachment[];
 }
 
 interface ProgressData {
@@ -30,7 +36,7 @@ interface ProgressData {
   title: string;
   description: string;
   tasks_completed: string[];
-  attachments: string[];
+  attachments: FileAttachment[];
 }
 
 export default function NonStudent_LogBook() {
@@ -40,6 +46,7 @@ export default function NonStudent_LogBook() {
   const [currentTask, setCurrentTask] = useState("");
   const [logbookData, setLogBookData] = useState({});
   const [progressData, setProgressData] = useState<ProgressData[]>([]);
+  const [totalHours, setTotalHours] = useState<number>(0)
   const [formData, setFormData] = useState<FormData>({
     date: "",
     hours_worked: "",
@@ -48,6 +55,13 @@ export default function NonStudent_LogBook() {
     description: "",
     attachments: [],
   });
+
+  const downloadFile = (file: FileAttachment) => {
+    const link = document.createElement('a');
+    link.href = file.data;
+    link.download = file.name;
+    link.click();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,13 +107,18 @@ export default function NonStudent_LogBook() {
       console.error("Error saving log:", error);
     }
   };
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!session?.user?.email) return;
     try {
       const response = await fetch(
         `/api/request/non_student/log_book_request?email_add=${session.user.email}`
       );
-      const data = await response.json();
+      const text = await response.text();
+      if (!text) {
+        setProgressData([]);
+        return;
+      }
+      const data = JSON.parse(text);
       if (response.ok) {
         setLogBookData(data);
         setProgressData(data.progress || []);
@@ -109,11 +128,15 @@ export default function NonStudent_LogBook() {
     } catch (error) {
       console.error(error);
     }
-  };
+  }, [session?.user?.email]);
 
   useEffect(() => {
     fetchData();
-  }, [session]);
+  }, [fetchData]);
+
+  useEffect(() => {
+    setTotalHours(progressData.map((log) => log.hours_worked).reduce((curr, sec) => curr + sec, 0));
+  }, [progressData]);
 
   return (
     <main className="text-black space-y-3.5">
@@ -136,7 +159,7 @@ export default function NonStudent_LogBook() {
         <div className="flex-1/3 p-3 py-4 shadow-lg rounded-2xl self-stretch flex items-center gap-4">
           <span
             className="p-2 rounded-lg bg-[#dbeafe] text-[#3a77fc]"
-            onClick={() => console.log(logbookData)}
+            onClick={() => {console.log(logbookData); console.log(totalHours)}}
           >
             <FileText size={18} />
           </span>
@@ -222,9 +245,17 @@ export default function NonStudent_LogBook() {
               ))}
             </div>
             <h4 className="text-xs">Attachments:</h4>
-            <span className="py-1 px-2 text-xs flex items-center gap-2 border border-black rounded-full w-fit">
-              <FileText size={12} /> {log?.attachments}
-            </span>
+            <div className="flex flex-wrap gap-2">
+              {log?.attachments?.map((file, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => downloadFile(file)}
+                  className="py-1 px-2 text-xs flex items-center gap-2 border border-black rounded-full w-fit hover:bg-gray-100"
+                >
+                  <FileText size={12} /> {file.name}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       ))}
@@ -232,7 +263,7 @@ export default function NonStudent_LogBook() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-5">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Add New Log</h2>
@@ -367,19 +398,30 @@ export default function NonStudent_LogBook() {
                   type="file"
                   multiple
                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     if (e.target.files) {
-                      const fileNames = Array.from(e.target.files).map(
-                        (f) => f.name
+                      const files = Array.from(e.target.files);
+                      const fileAttachments = await Promise.all(
+                        files.map(async (file) => {
+                          const reader = new FileReader();
+                          return new Promise<FileAttachment>((resolve) => {
+                            reader.onload = () => resolve({
+                              name: file.name,
+                              type: file.type,
+                              data: reader.result as string
+                            });
+                            reader.readAsDataURL(file);
+                          });
+                        })
                       );
-                      setFormData({ ...formData, attachments: fileNames });
+                      setFormData({ ...formData, attachments: fileAttachments });
                     }
                   }}
                   className="w-full p-2 border rounded-lg text-sm"
                 />
                 {formData.attachments.length > 0 && (
                   <div className="mt-2 text-sm text-gray-600">
-                    Selected files: {formData.attachments.join(", ")}
+                    Selected files: {formData.attachments.map(f => f.name).join(", ")}
                   </div>
                 )}
               </div>

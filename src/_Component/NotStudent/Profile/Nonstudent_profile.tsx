@@ -7,12 +7,18 @@ interface Data {
   hours_required?: number;
 }
 
+interface Total {
+  total_hours?: number;
+  total_logs?: number;
+}
+
 export default function Nonstudent_Profile() {
   const [initialName, setInitialName] = useState<string>("");
   const [dropdown, setDropdown] = useState<boolean>(false);
   const { data: session } = useSession();
   const [personData, setPersonData] = useState<Data | null>({});
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [logtotals, setLogTotal] = useState<Total>({})
 
   const handleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -30,13 +36,15 @@ export default function Nonstudent_Profile() {
         const response = await fetch(
           `/api/request/non_student/info?id=${session?.user.id}`
         );
-        console.log(response);
+        const responseTotal = await fetch(`/api/request/non_student/log_totals?email=${session?.user?.email}`)
+        const dataTotal = await responseTotal.json();
         const data = await response.json();
-        if (response.ok) {
+        if (response.ok || responseTotal.ok) {
           setPersonData({
             id: data?.id,
             hours_required: data?.hours_required ,
           });
+          setLogTotal(dataTotal);
         } else {
           console.error("There is an error", data.error);
         }
@@ -123,12 +131,12 @@ export default function Nonstudent_Profile() {
               {/* Total hours required */}
               <div className="flex flex-col self-end">
                 <p className="xs:text-md text-sm">Total Hours Completed</p>
-                <p className="xs:text-sm text-xs">{0} of {personData?.hours_required} required hours</p>
+                <p className="xs:text-sm text-xs">{logtotals.total_hours} of {personData?.hours_required} required hours</p>
               </div>
               {/* Progress in percentage */}
               <div className="text-end">
                 <p className="xs:text-2xl text-lg font-semibold text-blue-600">
-                  {0}%
+                  {logtotals.total_hours}%
                 </p>
                 <p className="xs:text-sm text-xs">{personData?.hours_required} hours remaining</p>
               </div>
@@ -136,15 +144,20 @@ export default function Nonstudent_Profile() {
             <div className="w-full bg-gray-300 rounded-full h-4 my-2">
               <div
                 className="bg-black h-4 rounded-full"
-                style={{ width: "0%" }}
+                style={{
+              width: `${(
+                ((logtotals.total_hours || 0) /
+                  (personData?.hours_required || 0)) *
+                100
+              ).toFixed(2)}%`}}
               ></div>
             </div>
             <div className="w-full flex sm:flex-row  flex-col items-center gap-3 mt-2">
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">
-                {(personData?.hours_required || 0)/8} <span className="text-sm font-extralight">Days Left</span>
+                {(personData?.hours_required || 0) - (personData?.hours_required || 0)/8} <span className="text-sm font-extralight">Days Left</span>
               </h1>
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">
-                4 <span className="text-sm font-extralight">Total Logs</span>
+                {logtotals.total_logs} <span className="text-sm font-extralight">Total Logs</span>
               </h1>
             </div>
           </div>
