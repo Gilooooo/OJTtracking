@@ -1,4 +1,5 @@
 "use client";
+import Loading_Page from "@/_Component/Loading";
 import MobileNavBar from "@/_Component/Navigation_Bar/MobileNavBar";
 import NavBar from "@/_Component/Navigation_Bar/NavBar";
 import NonStudent_dashboard from "@/_Component/NotStudent/Dashboard/Nonstudent_dashboard";
@@ -20,6 +21,7 @@ export default function Dashboard() {
   const { data: session, status } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<string>("dashboard");
+  const [isComponentLoading, setIsComponentLoading] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -37,11 +39,7 @@ export default function Dashboard() {
   };
 
   if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
+    return <Loading_Page />;
   }
 
   if (!session) {
@@ -109,16 +107,18 @@ export default function Dashboard() {
         activeSection={activeSection}
         setActiveSection={setActiveSection}
         handleLogout={handleLogout}
+        setIsComponentLoading={setIsComponentLoading}
       />
       <section className="flex h-full text-black">
         <NavBar
           activeSection={activeSection}
           setActiveSection={setActiveSection}
           handleLogout={handleLogout}
+          setIsComponentLoading={setIsComponentLoading}
         />
         <section className="bg-[#f8fafc] flex-1 h-full overflow-y-auto">
           <section className="max-w-4xl bg-[#f8fafc] m-auto min-h-full py-4 px-3">
-            {renderSection()}
+            {isComponentLoading ? <Loading_Page /> : renderSection()}
           </section>
         </section>
       </section>

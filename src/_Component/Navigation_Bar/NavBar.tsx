@@ -6,6 +6,7 @@ interface NavBarProps {
   activeSection: string;
   setActiveSection: (section: string) => void;
   handleLogout: () => void;
+  setIsComponentLoading?: (loading: boolean) => void;
 }
 
 interface Information {
@@ -24,7 +25,20 @@ export default function NavBar({
   activeSection,
   setActiveSection,
   handleLogout,
+  setIsComponentLoading,
 }: NavBarProps) {
+
+  const handleSectionChange = (section: string) => {
+    if (setIsComponentLoading) {
+      setIsComponentLoading(true);
+      setTimeout(() => {
+        setActiveSection(section);
+        setIsComponentLoading(false);
+      }, 300);
+    } else {
+      setActiveSection(section);
+    }
+  };
   const { data: session } = useSession();
   const [information, setInformation] = useState<Information>({});
   const [additionalInfo, setAdditionalInfo] = useState<Data>({});
@@ -117,7 +131,7 @@ export default function NavBar({
                   ? "border border-[#bce8fe] bg-[#f0f9ff]"
                   : "hover:bg-gray-100"
               }`}
-              onClick={() => setActiveSection("dashboard")}
+              onClick={() => handleSectionChange("dashboard")}
             >
               <HomeIcon size={14} />
               <span className="text-sm">Dashboard</span>
@@ -128,7 +142,7 @@ export default function NavBar({
                   ? "border border-[#bce8fe] bg-[#f0f9ff]"
                   : "hover:bg-gray-100"
               }`}
-              onClick={() => setActiveSection("logbook")}
+              onClick={() => handleSectionChange("logbook")}
             >
               <BookOpen size={14} />
               <span className="text-sm">Logbook</span>
@@ -139,7 +153,7 @@ export default function NavBar({
                   ? "border border-[#bce8fe] bg-[#f0f9ff]"
                   : "hover:bg-gray-100"
               }`}
-              onClick={() => setActiveSection("profile")}
+              onClick={() => handleSectionChange("profile")}
             >
               <User2 size={14} />
               <span className="text-sm">Profile</span>
@@ -154,7 +168,7 @@ export default function NavBar({
                       ? "border border-[#bce8fe] bg-[#f0f9ff]"
                       : "hover:bg-gray-100"
                   }`}
-                  onClick={() => setActiveSection("room")}
+                  onClick={() => handleSectionChange("room")}
                 >
                   <Users2 size={14} />
                   <span className="text-sm">Room</span>
@@ -165,7 +179,7 @@ export default function NavBar({
                       ? "border border-[#bce8fe] bg-[#f0f9ff]"
                       : "hover:bg-gray-100"
                   }`}
-                  onClick={() => setActiveSection("notifications")}
+                  onClick={() => handleSectionChange("notifications")}
                 >
                   <Bell size={14} />
                   <span className="text-sm">Notifications</span>

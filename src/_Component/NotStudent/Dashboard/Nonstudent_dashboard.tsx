@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import Loading_Page from "@/_Component/Loading";
 
 interface Info {
   id?: string;
@@ -23,6 +24,7 @@ export default function NonStudent_dashboard() {
   const { data: session } = useSession();
   const [userInfo, setUserInfo] = useState<Info>({});
   const [logtotals, setLogTotals] = useState<Total>({});
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -34,18 +36,23 @@ export default function NonStudent_dashboard() {
         const dataTotal = await responseTotal.json();
         if (response.ok || responseTotal.ok) {
           setUserInfo(data);
-          setLogTotals(dataTotal)
+          setLogTotals(dataTotal);
         } else {
           console.error("Problem Fetching data", data.error);
         }
+        setIsLoading(false);
       } catch (error) {
         console.error(error);
+        setIsLoading(false);
       }
     };
     fetchData();
   }, [session]);
 
-  console.log(session);
+  if (isLoading) {
+    return <Loading_Page />;
+  }
+
   return (
     <main className="text-black space-y-3.5">
       {/* Ojt Progress Preview */}

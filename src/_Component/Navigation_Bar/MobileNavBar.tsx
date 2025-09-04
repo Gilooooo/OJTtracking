@@ -8,6 +8,7 @@ interface MobileNavBarProps {
   activeSection: string;
   setActiveSection: (section: string) => void;
   handleLogout: () => void;
+  setIsComponentLoading?: (loading: boolean) => void;
 }
 
 export default function MobileNavBar({
@@ -16,7 +17,21 @@ export default function MobileNavBar({
   activeSection,
   setActiveSection,
   handleLogout,
+  setIsComponentLoading,
 }: MobileNavBarProps) {
+
+  const handleSectionChange = (section: string) => {
+    setIsMenuOpen(false);
+    if (setIsComponentLoading) {
+      setIsComponentLoading(true);
+      setTimeout(() => {
+        setActiveSection(section);
+        setIsComponentLoading(false);
+      }, 300);
+    } else {
+      setActiveSection(section);
+    }
+  };
   const { data: session } = useSession();
   const [initialName, setInitialName] = useState<string>("");
 
@@ -68,7 +83,7 @@ export default function MobileNavBar({
                       ? "border border-[#bce8fe] bg-[#f0f9ff]"
                       : "hover:bg-gray-100"
                   }`}
-                  onClick={() => setActiveSection("dashboard")}
+                  onClick={() => handleSectionChange("dashboard")}
                 >
                   <HomeIcon size={14} />
                   <span className="text-sm">Dashboard</span>
@@ -79,7 +94,7 @@ export default function MobileNavBar({
                       ? "border border-[#bce8fe] bg-[#f0f9ff]"
                       : "hover:bg-gray-100"
                   }`}
-                  onClick={() => setActiveSection("logbook")}
+                  onClick={() => handleSectionChange("logbook")}
                 >
                   <BookOpen size={14} />
                   <span className="text-sm">Logbook</span>
@@ -90,7 +105,7 @@ export default function MobileNavBar({
                       ? "border border-[#bce8fe] bg-[#f0f9ff]"
                       : "hover:bg-gray-100"
                   }`}
-                  onClick={() => setActiveSection("profile")}
+                  onClick={() => handleSectionChange("profile")}
                 >
                   <User2 size={14} />
                   <span className="text-sm">Profile</span>
@@ -105,7 +120,7 @@ export default function MobileNavBar({
                           ? "border border-[#bce8fe] bg-[#f0f9ff]"
                           : "hover:bg-gray-100"
                       }`}
-                      onClick={() => setActiveSection("room")}
+                      onClick={() => handleSectionChange("room")}
                     >
                       <Users2 size={14} />
                       <span className="text-sm">Room</span>
@@ -117,7 +132,7 @@ export default function MobileNavBar({
                           ? "border border-[#bce8fe] bg-[#f0f9ff]"
                           : "hover:bg-gray-100"
                       }`}
-                      onClick={() => setActiveSection("notifications")}
+                      onClick={() => handleSectionChange("notifications")}
                     >
                       <Bell size={14} />
                       <span className="text-sm">Notifications</span>

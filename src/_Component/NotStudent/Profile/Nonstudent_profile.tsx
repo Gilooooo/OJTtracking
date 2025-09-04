@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, Clock, Edit, Mail, MapPin, Phone, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import Loading_Page from "@/_Component/Loading";
 
 interface Data {
   id?: string;
@@ -18,7 +19,8 @@ export default function Nonstudent_Profile() {
   const { data: session } = useSession();
   const [personData, setPersonData] = useState<Data | null>({});
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [logtotals, setLogTotal] = useState<Total>({})
+  const [logtotals, setLogTotal] = useState<Total>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -48,15 +50,23 @@ export default function Nonstudent_Profile() {
         } else {
           console.error("There is an error", data.error);
         }
+        setIsLoading(false);
       } catch (error) {
         console.error(error);
+        setIsLoading(false);
       }
     };
     
     if (session?.user?.id) {
       fetchData();
+    } else {
+      setIsLoading(false);
     }
   }, [session]);
+
+  if (isLoading) {
+    return <Loading_Page />;
+  }
 
   return (
     <main className="text-black space-y-3.5">

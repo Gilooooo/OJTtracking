@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
+import Loading_Page from "@/_Component/Loading";
 
 interface FileAttachment {
   name: string;
@@ -46,7 +47,8 @@ export default function NonStudent_LogBook() {
   const [currentTask, setCurrentTask] = useState("");
   const [logbookData, setLogBookData] = useState({});
   const [progressData, setProgressData] = useState<ProgressData[]>([]);
-  const [totalHours, setTotalHours] = useState<number>(0)
+  const [totalHours, setTotalHours] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState<FormData>({
     date: "",
     hours_worked: "",
@@ -108,7 +110,10 @@ export default function NonStudent_LogBook() {
     }
   };
   const fetchData = useCallback(async () => {
-    if (!session?.user?.email) return;
+    if (!session?.user?.email) {
+      setIsLoading(false);
+      return;
+    }
     try {
       const response = await fetch(
         `/api/request/non_student/log_book_request?email_add=${session.user.email}`
@@ -116,6 +121,7 @@ export default function NonStudent_LogBook() {
       const text = await response.text();
       if (!text) {
         setProgressData([]);
+        setIsLoading(false);
         return;
       }
       const data = JSON.parse(text);
@@ -125,8 +131,10 @@ export default function NonStudent_LogBook() {
       } else {
         console.error("Error", data.error);
       }
+      setIsLoading(false);
     } catch (error) {
       console.error(error);
+      setIsLoading(false);
     }
   }, [session?.user?.email]);
 
@@ -137,6 +145,10 @@ export default function NonStudent_LogBook() {
   useEffect(() => {
     setTotalHours(progressData.map((log) => log.hours_worked).reduce((curr, sec) => curr + sec, 0));
   }, [progressData]);
+
+  if (isLoading) {
+    return <Loading_Page />;
+  }
 
   return (
     <main className="text-black space-y-3.5">
