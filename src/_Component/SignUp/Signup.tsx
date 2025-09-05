@@ -9,11 +9,13 @@ import {
   Phone,
   User,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [userType, setUserType] = useState<string>("");
+   const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
     fullName: "",
@@ -55,9 +57,8 @@ export default function Signup() {
       });
 
       const result = await response.json();
-
       if (response.ok) {
-        alert('Account created successfully!');
+        router.push('/Login');
       } else {
         alert('Error: ' + result.error);
       }
