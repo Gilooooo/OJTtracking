@@ -18,7 +18,6 @@ export async function GET(request: NextRequest) {
       "SELECT COALESCE(jsonb_array_length(progress), 0) as total_logs FROM log_book WHERE email_add = $1",
       [email]
     );
-    console.log(totalLogs.rows[0]);
     return new Response(
       JSON.stringify({
         total_hours: totalHours.rows[0].total_hours,

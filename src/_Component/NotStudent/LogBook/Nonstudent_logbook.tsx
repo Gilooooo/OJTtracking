@@ -1,7 +1,6 @@
 import {
   Calendar,
   CheckCircle,
-  ChevronDown,
   Clock,
   Edit,
   Eye,
@@ -32,6 +31,7 @@ interface FormData {
 
 interface ProgressData {
   date: string;
+  time: string;
   hours_worked: number;
   entry_type: string;
   title: string;
@@ -49,6 +49,8 @@ export default function NonStudent_LogBook() {
   const [progressData, setProgressData] = useState<ProgressData[]>([]);
   const [totalHours, setTotalHours] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [filteredData, setFilteredData] = useState<ProgressData[]>([]);
   const [formData, setFormData] = useState<FormData>({
     date: "",
     hours_worked: "",
@@ -57,19 +59,39 @@ export default function NonStudent_LogBook() {
     description: "",
     attachments: [],
   });
-
+  //For Downloading File
   const downloadFile = (file: FileAttachment) => {
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = file.data;
     link.download = file.name;
     link.click();
   };
+  //For Lapse Time
+  const getTimeElapsed = (date: string, time: string) => {
+    const logDateTime = new Date(`${date} ${time}`);
+    const now = new Date();
+    const diffMs = now.getTime() - logDateTime.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffWeeks = Math.floor(diffDays / 7);
+    if (diffWeeks > 0)
+      return `${diffWeeks} week${diffWeeks > 1 ? "s" : ""} ago`;
+    if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+    if (diffHours > 0) return `${diffHours} hr${diffHours > 1 ? "s" : ""} ago`;
+    if (diffMins > 0) return `${diffMins} min${diffMins > 1 ? "s" : ""} ago`;
+    return "Just now";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    //Value added to holder
     const progress = {
       date: formData.date,
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       hours_worked: parseInt(formData.hours_worked),
       entry_type: formData.entry_type,
       title: formData.title,
@@ -77,15 +99,16 @@ export default function NonStudent_LogBook() {
       tasks_completed: tasks,
       attachments: formData.attachments,
     };
-
+    //For Checking Request Body
     const requestBody = {
       email_add: session?.user?.email,
       account_type: "non-student",
       user_name: session?.user?.name,
       progress: progress,
     };
-    console.log(requestBody);
+
     try {
+      //API Call PUT for adding log/updating log
       const response = await fetch("/api/request/non_student/logbook", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -103,12 +126,27 @@ export default function NonStudent_LogBook() {
           description: "",
           attachments: [],
         });
-        fetchData(); // Refresh data after submission
+        fetchData();
       }
     } catch (error) {
       console.error("Error saving log:", error);
     }
   };
+  //Filtering Logs by title
+  const filterLogs = (searchValue: string) => {
+    setSearchTerm(searchValue);
+    if (!searchValue.trim()) {
+      setFilteredData(progressData);
+      return;
+    }
+    const filtered = progressData.filter(
+      (log) =>
+        log.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+        log.description.toLowerCase().includes(searchValue.toLowerCase())
+    );
+    setFilteredData(filtered);
+  };
+  // Fetch log book data
   const fetchData = useCallback(async () => {
     if (!session?.user?.email) {
       setIsLoading(false);
@@ -142,8 +180,14 @@ export default function NonStudent_LogBook() {
     fetchData();
   }, [fetchData]);
 
+  // Calculate total hours worked
   useEffect(() => {
-    setTotalHours(progressData.map((log) => log.hours_worked).reduce((curr, sec) => curr + sec, 0));
+    setTotalHours(
+      progressData
+        .map((log) => log.hours_worked)
+        .reduce((curr, sec) => curr + sec, 0)
+    );
+    setFilteredData(progressData);
   }, [progressData]);
 
   if (isLoading) {
@@ -171,7 +215,10 @@ export default function NonStudent_LogBook() {
         <div className="flex-1/3 p-3 py-4 shadow-lg rounded-2xl self-stretch flex items-center gap-4">
           <span
             className="p-2 rounded-lg bg-[#dbeafe] text-[#3a77fc]"
-            onClick={() => {console.log(logbookData); console.log(totalHours)}}
+            onClick={() => {
+              console.log(logbookData);
+              console.log(totalHours);
+            }}
           >
             <FileText size={18} />
           </span>
@@ -188,25 +235,16 @@ export default function NonStudent_LogBook() {
           <Search size={18} />
           <input
             type="text"
+            value={searchTerm}
+            onChange={(e) => filterLogs(e.target.value)}
             placeholder="Search logs by title or description...."
             className="flex-1 bg-transparent focus:outline-none text-sm"
           />
         </div>
-        <div className="flex items-center relative bg-[#f3f3f5] rounded-2xl py-2 px-3 sm:flex-1/4 h-10 self-stretch">
-          <select className="text-sm focus:outline-none appearance-none pr-8 bg-transparent w-full">
-            <option value="all">All Status</option>
-            <option value="approved">Approved</option>
-            <option value="pending">Pending</option>
-            <option value="rejected">Rejected</option>
-          </select>
-          <span className="absolute right-2">
-            <ChevronDown size={18} />
-          </span>
-        </div>
       </div>
 
       {/* Log list */}
-      {progressData.map((log, indx) => (
+      {filteredData.map((log, indx) => (
         <div
           className="p-4 py-5 bg-white shadow-lg rounded-2xl space-y-2"
           key={indx}
@@ -215,8 +253,9 @@ export default function NonStudent_LogBook() {
             <div className="text-xs flex gap-2 items-center sm:flex-row flex-col">
               <div className="flex items-center gap-3">
                 {/* Entry Type */}
-                <p className=" bg-white text-black border border-gray-300 px-2 p-1 rounded-2xl flex gap-2 items-center">
-                  {log?.entry_type}
+                <p className=" bg-[#dbfce7] text-black shadow-sm px-2 p-1 rounded-2xl flex gap-2 items-center">
+                  {log?.entry_type.charAt(0).toUpperCase() +
+                    log?.entry_type.slice(1).toLowerCase()}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -227,7 +266,8 @@ export default function NonStudent_LogBook() {
                 </span>
                 {/* Clock from date created */}
                 <span className="text-gray-400 flex items-center gap-1">
-                  <Clock size={12} />8 hrs ago
+                  <Clock size={12} />
+                  {getTimeElapsed(log?.date, log?.time)}
                 </span>
               </div>
             </div>
@@ -245,29 +285,35 @@ export default function NonStudent_LogBook() {
               {/* Description */}
               {log?.description}
             </p>
-            <h4 className="text-xs">Task Completed:</h4>
-            <div className="flex flex-col py-4 px-2 bg-[#f8fafc] shadow-lg rounded-md gap-1">
-              {log.tasks_completed.map((info, indx) => (
-                <span
-                  className="flex items-center text-xs text-gray-500 gap-3"
-                  key={indx}
-                >
-                  <CheckCircle size={12} className="text-[#2ab65e]" /> {info}
-                </span>
-              ))}
+            <div>
+              <h4 className="text-xs">Task Completed:</h4>
+              <div className="flex flex-col py-4 px-2 bg-[#f8fafc] shadow-lg rounded-md gap-1">
+                {log.tasks_completed.map((info, indx) => (
+                  <span
+                    className="flex items-center text-xs text-gray-500 gap-3"
+                    key={indx}
+                  >
+                    <CheckCircle size={12} className="text-[#2ab65e]" /> {info}
+                  </span>
+                ))}
+              </div>
             </div>
-            <h4 className="text-xs">Attachments:</h4>
-            <div className="flex flex-wrap gap-2">
-              {log?.attachments?.map((file, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => downloadFile(file)}
-                  className="py-1 px-2 text-xs flex items-center gap-2 border border-black rounded-full w-fit hover:bg-gray-100"
-                >
-                  <FileText size={12} /> {file.name}
-                </button>
-              ))}
-            </div>
+            {log?.attachments?.length > 0 && (
+              <>
+                <h4 className="text-xs">Attachments:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {log?.attachments?.map((file, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => downloadFile(file)}
+                      className="py-1 px-2 text-xs flex items-center gap-2 border border-black rounded-full w-fit hover:bg-gray-100"
+                    >
+                      <FileText size={12} /> {file.name}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       ))}
@@ -365,7 +411,7 @@ export default function NonStudent_LogBook() {
                       type="text"
                       value={currentTask}
                       onChange={(e) => setCurrentTask(e.target.value)}
-                      onKeyPress={(e) => {
+                      onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
                           if (currentTask.trim()) {
@@ -379,13 +425,15 @@ export default function NonStudent_LogBook() {
                     />
                   </div>
                   {tasks.length > 0 && (
-                    <div className="space-y-1">
+                    <div className="space-y-1 bg-[#f8fafc] rounded-2xl p-3 text-[#8896a9]">
                       {tasks.map((task, index) => (
                         <div
                           key={index}
                           className="flex items-center gap-2 text-sm"
                         >
-                          <span>•</span>
+                          <span className="text-[#60c787]">
+                            <CheckCircle size={10} />
+                          </span>
                           <span className="flex-1">{task}</span>
                           <button
                             type="button"
@@ -417,23 +465,28 @@ export default function NonStudent_LogBook() {
                         files.map(async (file) => {
                           const reader = new FileReader();
                           return new Promise<FileAttachment>((resolve) => {
-                            reader.onload = () => resolve({
-                              name: file.name,
-                              type: file.type,
-                              data: reader.result as string
-                            });
+                            reader.onload = () =>
+                              resolve({
+                                name: file.name,
+                                type: file.type,
+                                data: reader.result as string,
+                              });
                             reader.readAsDataURL(file);
                           });
                         })
                       );
-                      setFormData({ ...formData, attachments: fileAttachments });
+                      setFormData({
+                        ...formData,
+                        attachments: fileAttachments,
+                      });
                     }
                   }}
                   className="w-full p-2 border rounded-lg text-sm"
                 />
                 {formData.attachments.length > 0 && (
                   <div className="mt-2 text-sm text-gray-600">
-                    Selected files: {formData.attachments.map(f => f.name).join(", ")}
+                    Selected files:{" "}
+                    {formData.attachments.map((f) => f.name).join(", ")}
                   </div>
                 )}
               </div>

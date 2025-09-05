@@ -56,7 +56,7 @@ export default function Dashboard() {
         } else if (role === "student") {
           return <Student_Dashboard />;
         } else if (role === "non-student") {
-          return <NonStudent_dashboard />;
+          return <NonStudent_dashboard  setActiveSection={setActiveSection}/>;
         }
         break;
       case "logbook":
@@ -93,7 +93,7 @@ export default function Dashboard() {
         } else if (role === "student") {
           return <Student_Dashboard />;
         } else if (role === "non-student") {
-          return <NonStudent_dashboard />;
+          return <NonStudent_dashboard setActiveSection={setActiveSection}/>;
         }
     }
   };

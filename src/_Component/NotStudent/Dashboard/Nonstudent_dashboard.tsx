@@ -3,7 +3,6 @@ import {
   ChevronRight,
   CircleCheckBig,
   Clock,
-  Star,
   TrendingUp,
   User2,
 } from "lucide-react";
@@ -19,8 +18,11 @@ interface Total {
   total_hours?: number;
   total_logs?: number;
 }
+interface NonStudentDashboardProps {
+  setActiveSection: (section: string) => void;
+}
 
-export default function NonStudent_dashboard() {
+export default function NonStudent_dashboard({setActiveSection} : NonStudentDashboardProps) {
   const { data: session } = useSession();
   const [userInfo, setUserInfo] = useState<Info>({});
   const [logtotals, setLogTotals] = useState<Total>({});
@@ -198,7 +200,7 @@ export default function NonStudent_dashboard() {
           {/* Activites  */}
           <div className="flex flex-col mt-4 space-y-3">
             {/* Recent Update for log */}
-            <div className="flex items-center gap-2 py-2 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
+            <div className="flex items-center gap-2 py-4 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
               <span className="p-2 bg-[#fef9c2] text-[#e2b44d] rounded-lg self-start">
                 <BookOpen size={18} />
               </span>
@@ -212,31 +214,16 @@ export default function NonStudent_dashboard() {
                 <span className="text-xs">2 hours ago</span>
               </div>
             </div>
-            <div className="flex items-center gap-2 py-2 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
-              <span className="p-2 bg-[#dbeafe] text-[#3a77fc] rounded-lg self-start">
-                <Star size={18} />
-              </span>
-              <div className="flex flex-col gap-1 text-[#787a7e]">
-                <h1 className=" text-md text-black">Supervisor feedback</h1>
-                {/* Recent */}
-                <span className="text-sm -my-1">
-                  Great progress on the API integration
-                </span>
-                {/* Hours */}
-                <span className="text-xs">2 hours ago</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 py-2 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
+            <div className="flex items-center gap-2 py-4 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
               <span className="p-2 bg-[#dbfce7] text-[#2ab65e] rounded-lg self-start">
                 <CircleCheckBig size={18} />
               </span>
               <div className="flex flex-col gap-1 text-[#787a7e]">
-                <h1 className=" text-md text-black">350 hours completed</h1>
+                <h1 className=" text-md text-black">{logtotals.total_hours} hours completed</h1>
                 <span className="text-sm -my-1">
                   You&apos;re making excellent progress!
                 </span>
                 {/* Hours */}
-                <span className="text-xs">2 hours ago</span>
               </div>
             </div>
           </div>
@@ -249,7 +236,7 @@ export default function NonStudent_dashboard() {
           </div>
           <div className="flex flex-col space-y-2 mt-4">
             {/* Log Book */}
-            <button className="flex items-center gap-3 rounded-2xl bg-[#f8fafc] px-4 py-2 hover:shadow-md">
+            <button className="flex items-center gap-3 rounded-2xl bg-[#f8fafc] px-4 py-2 hover:shadow-md" onClick={() => setActiveSection("logbook")}>
               <span>
                 <BookOpen size={18} />
               </span>
@@ -262,7 +249,7 @@ export default function NonStudent_dashboard() {
               </span>
             </button>
             {/* Log Book */}
-            <button className="flex items-center gap-3 rounded-2xl bg-[#f8fafc] px-4 py-2 hover:shadow-md">
+            <button className="flex items-center gap-3 rounded-2xl bg-[#f8fafc] px-4 py-2 hover:shadow-md" onClick={() => setActiveSection("profile")}>
               <span>
                 <User2 size={18} />
               </span>

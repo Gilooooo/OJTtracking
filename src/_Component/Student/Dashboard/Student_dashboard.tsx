@@ -1,3 +1,4 @@
+import Loading_Page from "@/_Component/Loading";
 import {
   BookOpen,
   // Building,
@@ -23,7 +24,7 @@ interface StudentData {
 export default function Student_Dashboard() {
   const { data: session } = useSession();
   const [studentData, setStudentData] = useState<StudentData | null>(null);
-
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   useEffect(() => {
     const fetchData = async () => {
       if (session?.user?.id) {
@@ -35,16 +36,24 @@ export default function Student_Dashboard() {
           
           if (response.ok) {
             setStudentData(data);
+            setIsLoading(false);
           } else {
             console.error('Error:', data.error);
+            setIsLoading(false);
           }
         } catch (error) {
           console.error('Fetch error:', error);
+          setIsLoading(false);
         }
       }
     };
     fetchData();
   }, [session]);
+
+  if (isLoading) {
+    return <Loading_Page />;
+  }
+
   return (
     <section className="text-black space-y-3.5">
       {/* Ojt Progress Preview */}

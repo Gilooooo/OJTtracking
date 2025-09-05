@@ -34,7 +34,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
           const user = result.rows[0]
           const passwordChecking = String(credentials.password)
-          console.log(user);
           const isValidPassword = await bcrypt.compare(
             String(passwordChecking), 
             String(user.password).trim()
@@ -49,7 +48,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               phone: user.phone_number.trim()
             }
           }
-
           return null
         } catch (error) {
           console.error('Auth error:', error)

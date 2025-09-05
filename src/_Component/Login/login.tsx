@@ -8,6 +8,7 @@ export default function Login() {
   const [CheckPass, SetCheckPass] = useState<boolean>(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
   const router = useRouter();
 
   const checking = (): void => {
@@ -21,22 +22,24 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
+    
     try {
       const result = await signIn('credentials', {
         email: formData.email,
         password: formData.password,
-        redirect: false
+        redirect: false,
+        callbackUrl: '/Dashboard'
       });
-      console.log(result);
       
-      if (result?.ok) {
+      if (result?.ok && !result?.error) {
         router.push('/Dashboard');
       } else {
-        alert('Invalid credentials');
+        setError('Invalid email or password. Please try again.');
       }
     } catch (error) {
-      console.error('Login error:', error)
-      alert('Login failed');
+      console.error('Login error:', error);
+      setError('Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -92,6 +95,11 @@ export default function Login() {
               </div>
               <a className="text-blue-400">Forget Password?</a>
             </div>
+            {error && (
+              <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">
+                {error}
+              </div>
+            )}
             <button 
               type="submit" 
               disabled={isLoading}
