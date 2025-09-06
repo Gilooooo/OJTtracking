@@ -156,7 +156,7 @@ export default function Signup() {
                   <Phone size={14} />
                 </span>
                 <input
-                  type="tel"
+                  type="number"
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}

@@ -1,13 +1,14 @@
 "use client"
 import { Eye, EyeClosed, Lock, Mail } from "lucide-react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Login() {
   const [CheckPass, SetCheckPass] = useState<boolean>(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const {data: session} = useSession();
   const [error, setError] = useState<string>("");
   const router = useRouter();
 
@@ -44,6 +45,12 @@ export default function Login() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (session?.user) {
+      router.push('/Dashboard');
+    }}, [session, router]);
+
 
   return (
     <main className="bg-white h-[100dvh] text-[#242323] flex justify-center items-center ">

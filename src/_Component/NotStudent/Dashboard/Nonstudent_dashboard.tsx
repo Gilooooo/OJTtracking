@@ -21,22 +21,58 @@ interface Total {
 interface NonStudentDashboardProps {
   setActiveSection: (section: string) => void;
 }
+interface ActivitiesProps {
+  date?: string;
+  time?: string;
+  title?: string;
+  description?: string;
+}
 
-export default function NonStudent_dashboard({setActiveSection} : NonStudentDashboardProps) {
+export default function NonStudent_dashboard({
+  setActiveSection,
+}: NonStudentDashboardProps) {
   const { data: session } = useSession();
   const [userInfo, setUserInfo] = useState<Info>({});
   const [logtotals, setLogTotals] = useState<Total>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [recentActivities, setRecentActivities] = useState<ActivitiesProps>({});
+  const [lapseTime, setLapseTime] = useState<string>("");
+  const getTimeElapsed = (date: string, time: string) => {
+    const logDateTime = new Date(`${date} ${time}`);
+    const now = new Date();
+    const diffMs = now.getTime() - logDateTime.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffWeeks = Math.floor(diffDays / 7);
+    if (diffWeeks > 0)
+      return `${diffWeeks} week${diffWeeks > 1 ? "s" : ""} ago`;
+    if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+    if (diffHours > 0) return `${diffHours} hr${diffHours > 1 ? "s" : ""} ago`;
+    if (diffMins > 0) return `${diffMins} min${diffMins > 1 ? "s" : ""} ago`;
+    return "Just now";
+  };
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(
           `/api/request/non_student/info?&id=${session?.user?.id}`
         );
-        const responseTotal = await fetch(`/api/request/non_student/log_totals?email=${session?.user?.email}`)
-        const data = await response.json();
-        const dataTotal = await responseTotal.json();
+        const responseTotal = await fetch(
+          `/api/request/non_student/log_totals?email=${session?.user?.email}`
+        );
+        const recentActivities = await fetch(
+          `/api/request/non_student/logbook_dashboard?email=${session?.user?.email}`
+        );
+        const recentText = await recentActivities.text();
+        const responseText = await response.text();
+        const totalText = await responseTotal.text();
+        
+        const recentActivitiesData = recentText ? JSON.parse(recentText) : {};
+        const data = responseText ? JSON.parse(responseText) : {};
+        const dataTotal = totalText ? JSON.parse(totalText) : { total_hours: 0, total_logs: 0 };
         if (response.ok || responseTotal.ok) {
+          setRecentActivities(recentActivitiesData);
           setUserInfo(data);
           setLogTotals(dataTotal);
         } else {
@@ -50,6 +86,14 @@ export default function NonStudent_dashboard({setActiveSection} : NonStudentDash
     };
     fetchData();
   }, [session]);
+
+  useEffect(() => {
+    if (recentActivities.date && recentActivities.time) {
+      setLapseTime(
+        getTimeElapsed(recentActivities.date, recentActivities.time)
+      );
+    }
+  }, [recentActivities.date, recentActivities.time]);
 
   if (isLoading) {
     return <Loading_Page />;
@@ -164,7 +208,10 @@ export default function NonStudent_dashboard({setActiveSection} : NonStudentDash
               </span>
               <span className="text-xs">/ 40</span>
             </h1>
-            <span className="text-[10px]">{(userInfo?.hours_required || 0) - (logtotals.total_hours || 0)} Hours remaining</span>
+            <span className="text-[10px]">
+              {(userInfo?.hours_required || 0) - (logtotals.total_hours || 0)}{" "}
+              Hours remaining
+            </span>
           </div>
         </div>
         {/* Logs */}
@@ -178,54 +225,61 @@ export default function NonStudent_dashboard({setActiveSection} : NonStudentDash
           <div className="flex flex-col py-2 text-[#787a7e] ">
             <span className="text-black text-sm">Recent Log</span>
             <h1 className="flex items-end gap-1">
-              <span className="text-2xl text-black">{logtotals.total_logs}</span>
+              <span className="text-2xl text-black">
+                {logtotals.total_logs}
+              </span>
               <span className="text-xs">This month</span>
             </h1>
-            <span className="text-[10px]">2 pending approval</span>
+            <span className="text-[10px] text-transparent">Not Applicable</span>
           </div>
         </div>
       </div>
       {/*  */}
       <section className="flex gap-3 sm:flex-row flex-col">
         <div className="flex-1 p-5 shadow-lg rounded-2xl bg-white">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3">
             <span className="text-sm">Recent Activities</span>
-            <button className="py-1 px-3 rounded-2xl hover:bg-white hover:shadow-lg flex items-center">
-              View All <ChevronRight size={18} />
-            </button>
+            <p className="text-[#787a7e] text-sm">
+              Your latest OJT updates and milestones
+            </p>
           </div>
-          <p className="text-[#787a7e] text-sm">
-            Your latest OJT updates and milestones
-          </p>
           {/* Activites  */}
           <div className="flex flex-col mt-4 space-y-3">
             {/* Recent Update for log */}
-            <div className="flex items-center gap-2 py-4 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
-              <span className="p-2 bg-[#fef9c2] text-[#e2b44d] rounded-lg self-start">
-                <BookOpen size={18} />
-              </span>
-              <div className="flex flex-col gap-1 text-[#787a7e]">
-                <h1 className=" text-md text-black">Daily Log Submitted</h1>
-                {/* Task Description */}
-                <span className="text-sm -my-1">
-                  Frontend development task completed
+            {recentActivities.title && (
+              <div className="flex items-center gap-2 py-4 px-3 bg-[#f8fafc] rounded-2xl shadow-md hover:shadow-lg" onClick={() => setActiveSection("logbook")}>
+                <span className="p-2 bg-[#fef9c2] text-[#e2b44d] rounded-lg self-start">
+                  <BookOpen size={18} />
                 </span>
-                {/* Hours */}
-                <span className="text-xs">2 hours ago</span>
+                <div className="flex flex-col gap-1 text-[#787a7e]">
+                  <h1 className=" text-md text-black">
+                    {recentActivities.title}
+                  </h1>
+                  {/* Task Description */}
+                  <span className="text-xs -my-1 py-2">
+                    {recentActivities.description}
+                  </span>
+                  {/* Hours */}
+                  <span className="text-xs">{lapseTime}</span>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2 py-4 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
-              <span className="p-2 bg-[#dbfce7] text-[#2ab65e] rounded-lg self-start">
-                <CircleCheckBig size={18} />
-              </span>
-              <div className="flex flex-col gap-1 text-[#787a7e]">
-                <h1 className=" text-md text-black">{logtotals.total_hours} hours completed</h1>
-                <span className="text-sm -my-1">
-                  You&apos;re making excellent progress!
+            )}
+            {logtotals && (
+              <div className="flex items-center gap-2 py-4 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
+                <span className="p-2 bg-[#dbfce7] text-[#2ab65e] rounded-lg self-start">
+                  <CircleCheckBig size={18} />
                 </span>
-                {/* Hours */}
+                <div className="flex flex-col gap-1 text-[#787a7e]">
+                  <h1 className=" text-md text-black">
+                    {logtotals.total_hours} hours completed
+                  </h1>
+                  <span className="text-xs -my-1 py-2">
+                    You&apos;re making excellent progress!
+                  </span>
+                  {/* Hours */}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -236,7 +290,10 @@ export default function NonStudent_dashboard({setActiveSection} : NonStudentDash
           </div>
           <div className="flex flex-col space-y-2 mt-4">
             {/* Log Book */}
-            <button className="flex items-center gap-3 rounded-2xl bg-[#f8fafc] px-4 py-2 hover:shadow-md" onClick={() => setActiveSection("logbook")}>
+            <button
+              className="flex items-center gap-3 rounded-2xl bg-[#f8fafc] px-4 py-2 shadow-md hover:shadow-lg"
+              onClick={() => setActiveSection("logbook")}
+            >
               <span>
                 <BookOpen size={18} />
               </span>
@@ -249,7 +306,10 @@ export default function NonStudent_dashboard({setActiveSection} : NonStudentDash
               </span>
             </button>
             {/* Log Book */}
-            <button className="flex items-center gap-3 rounded-2xl bg-[#f8fafc] px-4 py-2 hover:shadow-md" onClick={() => setActiveSection("profile")}>
+            <button
+              className="flex items-center gap-3 rounded-2xl bg-[#f8fafc] px-4 py-2 shadow-md hover:shadow-lg"
+              onClick={() => setActiveSection("profile")}
+            >
               <span>
                 <User2 size={18} />
               </span>

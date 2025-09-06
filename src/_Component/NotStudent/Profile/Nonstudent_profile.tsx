@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Clock, Edit, Mail, MapPin, Phone, X } from "lucide-react";
+import { Clock, Edit, Mail, Phone, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Loading_Page from "@/_Component/Loading";
@@ -15,7 +15,6 @@ interface Total {
 
 export default function Nonstudent_Profile() {
   const [initialName, setInitialName] = useState<string>("");
-  const [dropdown, setDropdown] = useState<boolean>(false);
   const { data: session } = useSession();
   const [personData, setPersonData] = useState<Data | null>({});
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -114,13 +113,6 @@ export default function Nonstudent_Profile() {
                   </span>
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <MapPin size={18} className="text-gray-400" />
-                <span className="text-xs flex flex-col items-start text-gray-400">
-                  Address
-                  <span className="text-black font-semibold">{undefined}</span>
-                </span>
-              </div>
             </div>
           </div>
         </div>
@@ -164,7 +156,7 @@ export default function Nonstudent_Profile() {
             </div>
             <div className="w-full flex sm:flex-row  flex-col items-center gap-3 mt-2">
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">
-                {(personData?.hours_required || 0) - (personData?.hours_required || 0)/8} <span className="text-sm font-extralight">Days Left</span>
+                {((personData?.hours_required || 0) - (logtotals.total_hours || 0))/8} <span className="text-sm font-extralight" >Days Left</span>
               </h1>
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">
                 {logtotals.total_logs} <span className="text-sm font-extralight">Total Logs</span>
@@ -211,29 +203,6 @@ export default function Nonstudent_Profile() {
                   defaultValue={session?.user?.phone || ""}
                   className="w-full py-1 px-3 border rounded-lg focus:outline-none"
                 />
-              </div>
-              <div className="max-w-md -mx-6">
-                {dropdown ? (
-                  <button
-                    className="flex items-center gap-2 w-full justify-center bg-gray-100 py-1 text-sm"
-                    onClick={(e) => {
-                      setDropdown(!dropdown);
-                      e.preventDefault();
-                    }}
-                  >
-                    Academic Information <ChevronUp />
-                  </button>
-                ) : (
-                  <button
-                    className="flex items-center gap-2 w-full justify-center bg-gray-100 py-1 text-sm"
-                    onClick={(e) => {
-                      setDropdown(!dropdown);
-                      e.preventDefault();
-                    }}
-                  >
-                    Academic Information <ChevronDown />
-                  </button>
-                )}
               </div>
               <div className="flex gap-2 pt-4">
                 <button

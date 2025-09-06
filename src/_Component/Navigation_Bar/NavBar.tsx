@@ -97,10 +97,10 @@ export default function NavBar({
             {capitalizeFirst()} Portal
           </span>
         </div>
-        <div className="bg-blue-500 p-4 rounded-2xl text-xs">
+        <div className="bg-radial from-[#3a77fc] from-50% to-[#dbeafe] p-4 rounded-2xl text-xs shadow">
           <div className="flex items-center gap-2">
             <div
-              className="h-14 w-14 flex items-center justify-center rounded-full bg-amber-400"
+              className="h-14 w-14 flex items-center justify-center rounded-full bg-[#dbeafe]/30"
               onClick={() => console.log(additionalInfo)}
             >
               {initialName}
