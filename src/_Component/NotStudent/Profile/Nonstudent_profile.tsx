@@ -37,7 +37,7 @@ export default function Nonstudent_Profile() {
         const response = await fetch(
           `/api/request/non_student/info?id=${session?.user.id}`
         );
-        const responseTotal = await fetch(`/api/request/non_student/log_totals?email=${session?.user?.email}`)
+        const responseTotal = await fetch(`/api/request/LogBookRequest/log_totals?email=${session?.user?.email}`)
         const dataTotal = await responseTotal.json();
         const data = await response.json();
         if (response.ok || responseTotal.ok) {

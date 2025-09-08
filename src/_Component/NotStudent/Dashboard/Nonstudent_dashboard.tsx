@@ -59,10 +59,10 @@ export default function NonStudent_dashboard({
           `/api/request/non_student/info?&id=${session?.user?.id}`
         );
         const responseTotal = await fetch(
-          `/api/request/non_student/log_totals?email=${session?.user?.email}`
+          `/api/request/LogBookRequest/log_totals?email=${session?.user?.email}`
         );
         const recentActivities = await fetch(
-          `/api/request/non_student/logbook_dashboard?email=${session?.user?.email}`
+          `/api/request/LogBookRequest/logbook_dashboard?email=${session?.user?.email}`
         );
         const recentText = await recentActivities.text();
         const responseText = await response.text();

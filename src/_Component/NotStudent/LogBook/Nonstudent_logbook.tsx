@@ -74,7 +74,7 @@ export default function NonStudent_LogBook() {
   const handleDeleteLog = async () => {
     if (!selectedLog) return;
     try {
-      const response = await fetch("/api/request/non_student/logbook_delete", {
+      const response = await fetch("/api/request/LogBookRequest/logbook_delete", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -135,7 +135,7 @@ export default function NonStudent_LogBook() {
 
     try {
       //API Call PUT for adding log/updating log
-      const response = await fetch("/api/request/non_student/logbook", {
+      const response = await fetch("/api/request/LogBookRequest/logbook", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
@@ -180,7 +180,7 @@ export default function NonStudent_LogBook() {
     }
     try {
       const response = await fetch(
-        `/api/request/non_student/log_book_request?email_add=${session.user.email}`
+        `/api/request/LogBookRequest/log_book_request?email_add=${session.user.email}`
       );
       const text = await response.text();
       if (!text) {
