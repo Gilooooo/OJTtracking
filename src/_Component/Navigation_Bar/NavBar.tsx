@@ -90,7 +90,7 @@ export default function NavBar({
 
   return (
     <>
-      <nav className="h-full bg-white max-w-xs px-4 py-1 md:block hidden">
+      <nav className="h-full bg-white min-w-xs px-4 py-1 md:block hidden">
         <div className="px-3 py-4 flex flex-col">
           <span>Ojt Tracking</span>
           <span className="text-xs text-gray-600">

@@ -235,7 +235,7 @@ export default function NonStudent_dashboard({
         </div>
       </div>
       {/*  */}
-      <section className="flex gap-3 sm:flex-row flex-col">
+      <section className="flex gap-3 lg:flex-row md:flex-col sm:flex-row flex-col">
         <div className="flex-1 p-5 shadow-lg rounded-2xl bg-white">
           <div className="flex flex-col gap-3">
             <span className="text-sm">Recent Activities</span>

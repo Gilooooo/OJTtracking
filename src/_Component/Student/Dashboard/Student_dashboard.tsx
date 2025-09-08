@@ -157,7 +157,7 @@ export default function Student_Dashboard() {
         </div>
       </div>
       {/*  */}
-      <div className="flex gap-3 sm:flex-row flex-col">
+      <div className="flex gap-3 lg:flex-row md:flex-col sm:flex-row flex-col">
         <div className="flex-1 p-5 shadow-lg rounded-2xl bg-white">
           <div className="flex items-center justify-between">
             <span className="text-sm">Recent Activities</span>

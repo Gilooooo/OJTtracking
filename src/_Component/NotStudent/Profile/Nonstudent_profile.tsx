@@ -80,7 +80,7 @@ export default function Nonstudent_Profile() {
           <Edit size={12} /> Edit profile
         </button>
       </div>
-      <div className="flex gap-4 sm:flex-row flex-col">
+      <div className="flex gap-4 lg:flex-row flex-col">
         <div className="flex flex-col flex-1/3 gap-4">
           <div className="flex flex-col items-center p-5 px-6 bg-white shadow-lg rounded-2xl gap-1">
             {/* Profile Picture */}

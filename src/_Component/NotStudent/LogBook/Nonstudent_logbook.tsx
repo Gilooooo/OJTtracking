@@ -13,6 +13,7 @@ import {
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 import Loading_Page from "@/_Component/Loading";
+import Delete_Modal from "@/_Component/Modal/Deleting_Modal";
 
 interface FileAttachment {
   name: string;
@@ -42,9 +43,11 @@ interface ProgressData {
 
 export default function NonStudent_LogBook() {
   const { data: session } = useSession();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [deleteModal, setDeleteModal] = useState<boolean>(false);
+  const [selectedLog, setSelectedLog] = useState<ProgressData | null>(null);
   const [tasks, setTasks] = useState<string[]>([]);
-  const [currentTask, setCurrentTask] = useState("");
+  const [currentTask, setCurrentTask] = useState<string>("");
   const [logbookData, setLogBookData] = useState({});
   const [progressData, setProgressData] = useState<ProgressData[]>([]);
   const [totalHours, setTotalHours] = useState<number>(0);
@@ -65,6 +68,29 @@ export default function NonStudent_LogBook() {
     link.href = file.data;
     link.download = file.name;
     link.click();
+  };
+
+  //For Deleting Log
+  const handleDeleteLog = async () => {
+    if (!selectedLog) return;
+    try {
+      const response = await fetch("/api/request/non_student/logbook_delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email_add: session?.user?.email,
+          title: selectedLog.title
+        })
+      });
+      
+      if (response.ok) {
+        setDeleteModal(false);
+        setSelectedLog(null);
+        fetchData();
+      }
+    } catch (error) {
+      console.error("Error deleting log:", error);
+    }
   };
   //For Lapse Time
   const getTimeElapsed = (date: string, time: string) => {
@@ -275,7 +301,14 @@ export default function NonStudent_LogBook() {
             <div className="flex gap-3 items-center">
               <Eye size={18} />
               <Edit size={18} />
-              <Trash2 size={18} className="text-red-500" />
+              <Trash2
+                size={18}
+                className="text-red-500 cursor-pointer"
+                onClick={() => {
+                  setSelectedLog(log);
+                  setDeleteModal(true);
+                }}
+              />
             </div>
           </div>
           <div className="flex flex-col gap-3">
@@ -318,7 +351,15 @@ export default function NonStudent_LogBook() {
         </div>
       ))}
       {/* Log list */}
-
+      {deleteModal && selectedLog && (
+        <Delete_Modal
+          onClose={() => {
+            setDeleteModal(false);
+            setSelectedLog(null);
+          }}
+          onConfirm={handleDeleteLog}
+        />
+      )}
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-5">
