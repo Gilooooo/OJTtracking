@@ -1,5 +1,4 @@
 import NextAuth from "next-auth";
-import type { NextAuthConfig } from "next-auth";
 import Credentials from 'next-auth/providers/credentials';
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
@@ -8,7 +7,7 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
 
-export const authOptions: NextAuthConfig = {
+export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET,
   providers: [
     Credentials({
@@ -82,6 +81,4 @@ export const authOptions: NextAuthConfig = {
   session: {
     strategy: 'jwt'
   }
-};
-
-export const { auth, signIn, signOut } = NextAuth(authOptions);
+});
