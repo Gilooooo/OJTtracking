@@ -7,7 +7,7 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 })
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET,
   providers: [
     Credentials({
@@ -83,4 +83,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   }
 })
 
-export const { GET, POST } = handlers
+export { auth, signIn, signOut }
+export const GET = handlers.GET
+export const POST = handlers.POST

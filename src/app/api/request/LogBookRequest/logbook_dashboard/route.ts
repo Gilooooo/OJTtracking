@@ -14,7 +14,6 @@ export async function GET(request : NextRequest){
             return new Response(JSON.stringify({error: 'Email required'}), {status: 400})
         }
         const progressResult = await client.query("SELECT progress->0->>'date' as date, progress->0->>'time' as time, progress->0->>'title' as title, progress->0->>'description' as description FROM log_book WHERE email_add = $1", [email_add])
-        console.log("REQUEST", progressResult.rows[0])
         return new Response(JSON.stringify(progressResult.rows[0]), {status: 200})
 
     }catch(error){

@@ -16,7 +16,6 @@ export async function GET(request: NextRequest) {
     );
 
     if (checkUser.rows.length === 0 || !checkUser.rows[0].progress) {
-      console.log("No Log added");
       return new Response(
         JSON.stringify({
           total_hours: 0,
