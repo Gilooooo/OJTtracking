@@ -276,7 +276,7 @@ export default function NonStudent_LogBook() {
           key={indx}
         >
           <div className="flex items-center justify-between">
-            <div className="text-xs flex gap-2 items-center sm:flex-row flex-col">
+            <div className="text-xs flex gap-2 items-center flex-row">
               <div className="flex items-center gap-3">
                 {/* Entry Type */}
                 <p className=" bg-[#dbfce7] text-black shadow-sm px-2 p-1 rounded-2xl flex gap-2 items-center">
