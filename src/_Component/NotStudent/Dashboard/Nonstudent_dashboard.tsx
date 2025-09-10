@@ -9,33 +9,23 @@ import {
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Loading_Page from "@/_Component/Loading";
+import { useNonStudentStore } from "@/store/useNonStudentstore";
 
-interface Info {
-  id?: string;
-  hours_required?: number;
-}
-interface Total {
-  total_hours?: number;
-  total_logs?: number;
-}
 interface NonStudentDashboardProps {
   setActiveSection: (section: string) => void;
-}
-interface ActivitiesProps {
-  date?: string;
-  time?: string;
-  title?: string;
-  description?: string;
 }
 
 export default function NonStudent_dashboard({
   setActiveSection,
 }: NonStudentDashboardProps) {
   const { data: session } = useSession();
-  const [userInfo, setUserInfo] = useState<Info>({});
-  const [logtotals, setLogTotals] = useState<Total>({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [recentActivities, setRecentActivities] = useState<ActivitiesProps>({});
+  const { 
+    userInfo, 
+    logTotals: logtotals, 
+    recentActivities, 
+    isLoading, 
+    fetchUserData 
+  } = useNonStudentStore();
   const [lapseTime, setLapseTime] = useState<string>("");
   const getTimeElapsed = (date: string, time: string) => {
     const logDateTime = new Date(`${date} ${time}`);
@@ -53,39 +43,13 @@ export default function NonStudent_dashboard({
     return "Just now";
   };
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(
-          `/api/request/non_student/info?&id=${session?.user?.id}`
-        );
-        const responseTotal = await fetch(
-          `/api/request/LogBookRequest/log_totals?email=${session?.user?.email}`
-        );
-        const recentActivities = await fetch(
-          `/api/request/LogBookRequest/logbook_dashboard?email=${session?.user?.email}`
-        );
-        const recentText = await recentActivities.text();
-        const responseText = await response.text();
-        const totalText = await responseTotal.text();
-        
-        const recentActivitiesData = recentText ? JSON.parse(recentText) : {};
-        const data = responseText ? JSON.parse(responseText) : {};
-        const dataTotal = totalText ? JSON.parse(totalText) : { total_hours: 0, total_logs: 0 };
-        if (response.ok || responseTotal.ok) {
-          setRecentActivities(recentActivitiesData);
-          setUserInfo(data);
-          setLogTotals(dataTotal);
-        } else {
-          console.error("Problem Fetching data", data.error);
-        }
-        setIsLoading(false);
-      } catch (error) {
-        console.error(error);
-        setIsLoading(false);
+    if (session?.user?.id && session?.user?.email) {
+      // Only fetch if we don't have data or if it's been more than 5 minutes
+      if (!userInfo.id || !logtotals.total_hours) {
+        fetchUserData(session.user.id, session.user.email);
       }
-    };
-    fetchData();
-  }, [session]);
+    }
+  }, [session, userInfo.id, logtotals.total_hours, fetchUserData]);
 
   useEffect(() => {
     if (recentActivities.date && recentActivities.time) {

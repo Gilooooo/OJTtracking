@@ -11,9 +11,10 @@ import {
   X,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Loading_Page from "@/_Component/Loading";
 import Delete_Modal from "@/_Component/Modal/Deleting_Modal";
+import { useNonStudentStore } from "@/store/useNonStudentstore";
 
 interface FileAttachment {
   name: string;
@@ -31,11 +32,11 @@ interface FormData {
 }
 
 interface ProgressData {
+  title: string;
   date: string;
   time: string;
   hours_worked: number;
   entry_type: string;
-  title: string;
   description: string;
   tasks_completed: string[];
   attachments: FileAttachment[];
@@ -43,15 +44,19 @@ interface ProgressData {
 
 export default function NonStudent_LogBook() {
   const { data: session } = useSession();
+  const { 
+    progressData, 
+    isLoading, 
+    fetchProgressData, 
+    refreshAfterLogChange,
+  } = useNonStudentStore();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [deleteModal, setDeleteModal] = useState<boolean>(false);
   const [selectedLog, setSelectedLog] = useState<ProgressData | null>(null);
   const [tasks, setTasks] = useState<string[]>([]);
   const [currentTask, setCurrentTask] = useState<string>("");
-  const [logbookData, setLogBookData] = useState({});
-  const [progressData, setProgressData] = useState<ProgressData[]>([]);
+
   const [totalHours, setTotalHours] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filteredData, setFilteredData] = useState<ProgressData[]>([]);
   const [formData, setFormData] = useState<FormData>({
@@ -74,7 +79,7 @@ export default function NonStudent_LogBook() {
   const handleDeleteLog = async () => {
     if (!selectedLog) return;
     try {
-      const response = await fetch("/api/request/LogBookRequest/logbook_delete", {
+      const response = await fetch("/api/request/non_student/logbook_delete", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -86,7 +91,9 @@ export default function NonStudent_LogBook() {
       if (response.ok) {
         setDeleteModal(false);
         setSelectedLog(null);
-        fetchData();
+        if (session?.user?.email) {
+          refreshAfterLogChange(session.user.email);
+        }
       }
     } catch (error) {
       console.error("Error deleting log:", error);
@@ -135,7 +142,7 @@ export default function NonStudent_LogBook() {
 
     try {
       //API Call PUT for adding log/updating log
-      const response = await fetch("/api/request/LogBookRequest/logbook", {
+      const response = await fetch("/api/request/non_student/logbook", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
@@ -152,7 +159,10 @@ export default function NonStudent_LogBook() {
           description: "",
           attachments: [],
         });
-        fetchData();
+        // Refresh data after adding log
+        if (session?.user?.email) {
+          refreshAfterLogChange(session.user.email);
+        }
       }
     } catch (error) {
       console.error("Error saving log:", error);
@@ -172,39 +182,11 @@ export default function NonStudent_LogBook() {
     );
     setFilteredData(filtered);
   };
-  // Fetch log book data
-  const fetchData = useCallback(async () => {
-    if (!session?.user?.email) {
-      setIsLoading(false);
-      return;
-    }
-    try {
-      const response = await fetch(
-        `/api/request/LogBookRequest/log_book_request?email_add=${session.user.email}`
-      );
-      const text = await response.text();
-      if (!text) {
-        setProgressData([]);
-        setIsLoading(false);
-        return;
-      }
-      const data = JSON.parse(text);
-      if (response.ok) {
-        setLogBookData(data);
-        setProgressData(data.progress || []);
-      } else {
-        console.error("Error", data.error);
-      }
-      setIsLoading(false);
-    } catch (error) {
-      console.error(error);
-      setIsLoading(false);
-    }
-  }, [session?.user?.email]);
-
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (session?.user?.email && progressData.length === 0) {
+      fetchProgressData(session.user.email);
+    }
+  }, [session?.user?.email, progressData.length, fetchProgressData]);
 
   // Calculate total hours worked
   useEffect(() => {
@@ -242,7 +224,6 @@ export default function NonStudent_LogBook() {
           <span
             className="p-2 rounded-lg bg-[#dbeafe] text-[#3a77fc]"
             onClick={() => {
-              console.log(logbookData);
               console.log(totalHours);
             }}
           >
