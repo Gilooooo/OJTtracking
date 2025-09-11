@@ -142,7 +142,7 @@ export default function NonStudent_LogBook() {
 
     try {
       //API Call PUT for adding log/updating log
-      const response = await fetch("/api/request/non_student/logbook", {
+      const response = await fetch("/api/request/LogBookRequest/logbook", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),

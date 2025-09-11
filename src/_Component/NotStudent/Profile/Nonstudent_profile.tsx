@@ -125,9 +125,14 @@ export default function Nonstudent_Profile() {
               {/* Progress in percentage */}
               <div className="text-end">
                 <p className="xs:text-2xl text-lg font-semibold text-blue-600">
-                  {logtotals.total_hours}%
+                   {(
+                ((logtotals.total_hours || 0) /
+                  (userInfo?.hours_required || 0)) *
+                100
+              ).toFixed(2)}
+              %
                 </p>
-                <p className="xs:text-sm text-xs">{userInfo?.hours_required} hours remaining</p>
+                <p className="xs:text-sm text-xs">{(userInfo?.hours_required || 0) - (logtotals.total_hours || 0)}  hours remaining</p>
               </div>
             </div>
             <div className="w-full bg-gray-300 rounded-full h-4 my-2">
