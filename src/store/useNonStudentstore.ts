@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 interface UserInfo {
+  userName?: string;
   id?: string;
   hours_required?: number;
 }
@@ -46,7 +47,6 @@ interface NonStudentStore {
   fetchUserData: (userId: string, email: string) => Promise<void>;
   fetchLogTotals: (email: string) => Promise<void>;
   fetchProgressData: (email: string) => Promise<void>;
-  setProgressData: (data: ProgressData[]) => void;
   refreshAfterLogChange: (email: string) => Promise<void>;
   setLoading: (loading: boolean) => void;
 }
@@ -123,10 +123,6 @@ export const useNonStudentStore = create<NonStudentStore>((set, get) => ({
       console.error('Error fetching progress data:', error);
       set({ progressData: [] });
     }
-  },
-
-  setProgressData: (data: ProgressData[]) => {
-    set({ progressData: data });
   },
 
   refreshAfterLogChange: async (email: string) => {

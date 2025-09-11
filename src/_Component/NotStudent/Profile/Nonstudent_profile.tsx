@@ -2,71 +2,58 @@ import { Clock, Edit, Mail, Phone, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Loading_Page from "@/_Component/Loading";
+import { useNonStudentStore } from "@/store/useNonStudentstore";
 
-interface Data {
-  id?: string;
-  hours_required?: number;
+interface ProfileData{
+  user_name?: string;
+  fullName?: string;
+  email?: string;
+  phone?: string; 
 }
 
-interface Total {
-  total_hours?: number;
-  total_logs?: number;
-}
 
 export default function Nonstudent_Profile() {
   const [initialName, setInitialName] = useState<string>("");
   const { data: session } = useSession();
-  const [personData, setPersonData] = useState<Data | null>({});
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [logtotals, setLogTotal] = useState<Total>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const {userInfo, logTotals: logtotals, isLoading, fetchUserData} = useNonStudentStore();
+  const [userData, setUserData] = useState<ProfileData>({
+      user_name: session?.user?.username || "",
+      fullName: session?.user?.name || "",
+      email: session?.user?.email || "",
+      phone: session?.user?.phone || "", 
+    });
 
-  const handleModal = () => {
-    setIsModalOpen(!isModalOpen);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const data = {
+      username: userData.user_name,
+      fullName: userData.fullName,
+      email: userData.email,
+      phone: userData.phone,
+    }
+    console.log(data);
   }
-
+  
   useEffect(() => {
+      if (session?.user?.id && session?.user?.email) {
+      // Only fetch if we don't have data or if it's been more than 5 minutes
+      if (!userInfo.id || !logtotals.total_hours) {
+        fetchUserData(session.user.id, session.user.email);
+      }
+    }
     const InitialNaming = () => {
       const name = session?.user?.name?.trim();
       const t = name?.split(" ");
       setInitialName((t?.[0]?.[0] || "") + (t?.[1]?.[0] || ""));
     };
     InitialNaming();
-    const fetchData = async () => {
-      try {
-        const response = await fetch(
-          `/api/request/non_student/info?id=${session?.user.id}`
-        );
-        const responseTotal = await fetch(`/api/request/LogBookRequest/log_totals?email=${session?.user?.email}`)
-        const dataTotal = await responseTotal.json();
-        const data = await response.json();
-        if (response.ok || responseTotal.ok) {
-          setPersonData({
-            id: data?.id,
-            hours_required: data?.hours_required ,
-          });
-          setLogTotal(dataTotal);
-        } else {
-          console.error("There is an error", data.error);
-        }
-        setIsLoading(false);
-      } catch (error) {
-        console.error(error);
-        setIsLoading(false);
-      }
-    };
-    
-    if (session?.user?.id) {
-      fetchData();
-    } else {
-      setIsLoading(false);
-    }
-  }, [session]);
+
+  }, [session, fetchUserData, userInfo.id, logtotals.total_hours]);
 
   if (isLoading) {
     return <Loading_Page />;
   }
-
   return (
     <main className="text-black space-y-3.5">
       <div className="flex items-center justify-between">
@@ -76,7 +63,7 @@ export default function Nonstudent_Profile() {
             Manage your personal information and OJT details
           </span>
         </h1>
-        <button className="flex items-center gap-2 xs:py-2 xs:px-3 p-2 bg-blue-500 rounded-lg text-white xs:text-sm text-[10px]" onClick={handleModal}>
+        <button className="flex items-center gap-2 xs:py-2 xs:px-3 p-2 bg-blue-500 rounded-lg text-white xs:text-sm text-[10px]" onClick={() => {setIsModalOpen(!isModalOpen)}}>
           <Edit size={12} /> Edit profile
         </button>
       </div>
@@ -84,7 +71,7 @@ export default function Nonstudent_Profile() {
         <div className="flex flex-col flex-1/3 gap-4">
           <div className="flex flex-col items-center p-5 px-6 bg-white shadow-lg rounded-2xl gap-1">
             {/* Profile Picture */}
-            <div className="h-20 w-20 rounded-full bg-amber-400 flex items-center justify-center">
+            <div className="h-20 w-20 rounded-full bg-amber-400 flex items-center justify-center" onClick={() => console.log(session?.user?.username)}>
               {initialName}
             </div>
             {/* Full Name */}
@@ -133,14 +120,14 @@ export default function Nonstudent_Profile() {
               {/* Total hours required */}
               <div className="flex flex-col self-end">
                 <p className="xs:text-md text-sm">Total Hours Completed</p>
-                <p className="xs:text-sm text-xs">{logtotals.total_hours} of {personData?.hours_required} required hours</p>
+                <p className="xs:text-sm text-xs">{logtotals.total_hours} of {userInfo?.hours_required} required hours</p>
               </div>
               {/* Progress in percentage */}
               <div className="text-end">
                 <p className="xs:text-2xl text-lg font-semibold text-blue-600">
                   {logtotals.total_hours}%
                 </p>
-                <p className="xs:text-sm text-xs">{personData?.hours_required} hours remaining</p>
+                <p className="xs:text-sm text-xs">{userInfo?.hours_required} hours remaining</p>
               </div>
             </div>
             <div className="w-full bg-gray-300 rounded-full h-4 my-2">
@@ -149,14 +136,14 @@ export default function Nonstudent_Profile() {
                 style={{
               width: `${(
                 ((logtotals.total_hours || 0) /
-                  (personData?.hours_required || 0)) *
+                  (userInfo?.hours_required || 0)) *
                 100
               ).toFixed(2)}%`}}
               ></div>
             </div>
             <div className="w-full flex sm:flex-row  flex-col items-center gap-3 mt-2">
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">
-                {((personData?.hours_required || 0) - (logtotals.total_hours || 0))/8} <span className="text-sm font-extralight" >Days Left</span>
+                {((userInfo?.hours_required || 0) - (logtotals.total_hours || 0))/8} <span className="text-sm font-extralight" >Days Left</span>
               </h1>
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">
                 {logtotals.total_logs} <span className="text-sm font-extralight">Total Logs</span>
@@ -177,14 +164,15 @@ export default function Nonstudent_Profile() {
                 <X size={20} />
               </button>
             </div>
-            <form className="space-y-2">
+            <form className="space-y-2" onSubmit={handleSubmit}>
               <div>
                 <label className="block text-sm font-medium mb-1">
                   Full Name
                 </label>
                 <input
                   type="text"
-                  defaultValue={session?.user?.name || ""}
+                  value={userData.fullName}
+                  onChange={(e) => setUserData({...userData, fullName: e.target.value})}
                   className="w-full py-1 px-3 border rounded-lg focus:outline-none"
                 />
               </div>
@@ -192,15 +180,17 @@ export default function Nonstudent_Profile() {
                 <label className="block text-sm font-medium mb-1">Email</label>
                 <input
                   type="email"
-                  defaultValue={session?.user?.email || ""}
+                  value={userData.email}
+                  onChange={(e) => setUserData({...userData, email: e.target.value})}
                   className="w-full py-1 px-3 border rounded-lg focus:outline-none"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Phone</label>
                 <input
-                  type="tel"
-                  defaultValue={session?.user?.phone || ""}
+                  type="number"
+                  value={userData.phone}
+                  onChange={(e) => setUserData({...userData, phone: e.target.value})}
                   className="w-full py-1 px-3 border rounded-lg focus:outline-none"
                 />
               </div>

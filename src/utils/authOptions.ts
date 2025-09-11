@@ -14,7 +14,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -42,6 +42,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (isValidPassword) {
             return {
               id: user.id.toString().trim(),
+              username: user.user_name.trim(),
               email: user.email_add.trim(),
               name: user.full_name.trim(),
               role: user.account_type.trim(),
@@ -63,14 +64,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.role = user?.role;
         token.phone = user?.phone;
+        token.username = user?.username;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        (session.user as { id: string; role: string; phone: string }).id = token.sub as string;
-        (session.user as { id: string; role: string; phone: string }).role = token.role as string;
-        (session.user as { id: string; role: string; phone: string }).phone = token.phone as string;
+        (session.user as { id: string; role: string; phone: string; username:string;}).id = token.sub as string;
+        (session.user as { id: string; role: string; phone: string; username:string;}).role = token.role as string;
+        (session.user as { id: string; role: string; phone: string; username:string;}).phone = token.phone as string;
+        (session.user as { id: string; role: string; phone: string; username:string;}).username = token.username as string
       }
       return session;
     }

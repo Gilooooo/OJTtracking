@@ -19,12 +19,12 @@ export default function NonStudent_dashboard({
   setActiveSection,
 }: NonStudentDashboardProps) {
   const { data: session } = useSession();
-  const { 
-    userInfo, 
-    logTotals: logtotals, 
-    recentActivities, 
-    isLoading, 
-    fetchUserData 
+  const {
+    userInfo,
+    logTotals: logtotals,
+    recentActivities,
+    isLoading,
+    fetchUserData,
   } = useNonStudentStore();
   const [lapseTime, setLapseTime] = useState<string>("");
   const getTimeElapsed = (date: string, time: string) => {
@@ -211,7 +211,10 @@ export default function NonStudent_dashboard({
           <div className="flex flex-col mt-4 space-y-3">
             {/* Recent Update for log */}
             {recentActivities.title && (
-              <div className="flex items-center gap-2 py-4 px-3 bg-[#f8fafc] rounded-2xl shadow-md hover:shadow-lg" onClick={() => setActiveSection("logbook")}>
+              <div
+                className="flex items-center gap-2 py-4 px-3 bg-[#f8fafc] rounded-2xl shadow-md hover:shadow-lg"
+                onClick={() => setActiveSection("logbook")}
+              >
                 <span className="p-2 bg-[#fef9c2] text-[#e2b44d] rounded-lg self-start">
                   <BookOpen size={18} />
                 </span>
