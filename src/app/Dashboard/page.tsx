@@ -75,7 +75,7 @@ export default function Dashboard() {
         } else if (role === "student") {
           return <Student_Profile />;
         } else if (role === "non-student") {
-          return <Nonstudent_Profile />;
+          return <Nonstudent_Profile handleLogout = {handleLogout}/>;
         }
         break;
       case "notifications":

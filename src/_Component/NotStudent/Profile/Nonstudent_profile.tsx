@@ -5,34 +5,54 @@ import Loading_Page from "@/_Component/Loading";
 import { useNonStudentStore } from "@/store/useNonStudentstore";
 
 interface ProfileData{
-  user_name?: string;
   fullName?: string;
   email?: string;
   phone?: string; 
 }
 
+interface NonstudentProfileProps {
+  handleLogout: () => void;
+}
 
-export default function Nonstudent_Profile() {
+export default function Nonstudent_Profile({handleLogout}: NonstudentProfileProps) {
   const [initialName, setInitialName] = useState<string>("");
   const { data: session } = useSession();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const {userInfo, logTotals: logtotals, isLoading, fetchUserData} = useNonStudentStore();
+  const [ alertModal, setAlertModal ] = useState<boolean>(false);
+  const [successModal, setSuccessModal] = useState<boolean>(false); 
   const [userData, setUserData] = useState<ProfileData>({
-      user_name: session?.user?.username || "",
       fullName: session?.user?.name || "",
       email: session?.user?.email || "",
       phone: session?.user?.phone || "", 
     });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
+    setAlertModal(false);
     const data = {
-      username: userData.user_name,
+      username: session?.user?.username,
       fullName: userData.fullName,
       email: userData.email,
       phone: userData.phone,
     }
-    console.log(data);
+    try{
+        const response = await fetch("/api/request/non_student/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if(response.ok){
+        setIsModalOpen(false);
+        setSuccessModal(true);
+        setTimeout(() => {
+          setSuccessModal(false);
+          handleLogout();
+        }, 3000);
+      }
+    }catch(error){
+      console.log(error);
+    }
   }
   
   useEffect(() => {
@@ -63,7 +83,7 @@ export default function Nonstudent_Profile() {
             Manage your personal information and OJT details
           </span>
         </h1>
-        <button className="flex items-center gap-2 xs:py-2 xs:px-3 p-2 bg-blue-500 rounded-lg text-white xs:text-sm text-[10px]" onClick={() => {setIsModalOpen(!isModalOpen)}}>
+        <button className="flex items-center gap-2 xs:py-2 xs:px-3 p-2 bg-blue-500 rounded-lg text-white xs:text-sm text-[10px]" onClick={() => {setAlertModal(true)}}>
           <Edit size={12} /> Edit profile
         </button>
       </div>
@@ -215,6 +235,56 @@ export default function Nonstudent_Profile() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+       {alertModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Alert</h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <section className="space-y-2">
+              <div>
+                <p className="text-center">Changing profile require you to re-login after changing <span className="text-red-500">Are you sure to update your profile?</span></p>
+              </div>
+              <div className="flex gap-2 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setAlertModal(false)}
+                  className="flex-1 py-2 px-4 border rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  className="flex-1 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  onClick={(e) => {setIsModalOpen(true); setAlertModal(false); e.preventDefault();}}
+                >
+                  Proceed
+                </button>
+              </div>
+            </section>
+          </div>
+        </div>
+      )}
+            {successModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Success</h2>
+            </div>
+            <section className="space-y-2">
+              <div>
+                <p className="text-center">Successfully Update your profile, kindly relogin again!</p>
+              </div>
+            
+            </section>
           </div>
         </div>
       )}

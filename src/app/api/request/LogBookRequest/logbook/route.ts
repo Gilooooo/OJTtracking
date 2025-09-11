@@ -15,7 +15,7 @@ export async function PUT(request : NextRequest){
             await client.query("INSERT INTO log_book (email_add, account_type, user_name, progress, updated_date, created_date) VALUES ($1, $2, $3, $4, NOW(), NOW())", [email_add, account_type, user_name, JSON.stringify([progress])])
         }else{
             const existingProgress = checkingrow.rows[0].progress || [];
-            const updatedProgress = Array.isArray(existingProgress) ? [...existingProgress, progress] : [progress];
+            const updatedProgress = Array.isArray(existingProgress) ? [progress ,...existingProgress] : [progress];
             await client.query("UPDATE log_book SET progress = $1, updated_date = NOW() WHERE email_add = $2", [JSON.stringify(updatedProgress), email_add])
         }
         await client.query('COMMIT')

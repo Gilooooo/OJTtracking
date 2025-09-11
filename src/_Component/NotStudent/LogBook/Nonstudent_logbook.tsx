@@ -79,7 +79,7 @@ export default function NonStudent_LogBook() {
   const handleDeleteLog = async () => {
     if (!selectedLog) return;
     try {
-      const response = await fetch("/api/request/non_student/logbook_delete", {
+      const response = await fetch("/api/request/LogBookRequest/logbook_delete", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
