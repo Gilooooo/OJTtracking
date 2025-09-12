@@ -15,7 +15,8 @@ import { useEffect, useState } from "react";
 export default function Signup() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [userType, setUserType] = useState<string>("");
-   const router = useRouter();
+  const [existingInfo, setExistingInfo] = useState<string>("");
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
     fullName: "",
@@ -58,9 +59,11 @@ export default function Signup() {
 
       const result = await response.json();
       if (response.ok) {
+        setExistingInfo("");
+        alert('Account created successfully! You can now log in.');
         router.push('/Login');
       } else {
-        alert('Error: ' + result.error);
+        setExistingInfo(result.error);
       }
     } catch (error) {
       console.error("Network error", error);
@@ -94,7 +97,7 @@ export default function Signup() {
             {/* Email */}
             <div className="flex flex-col">
               <label>Email Address</label>
-              <div className="py-2 px-3 bg-[#f3f3f5] rounded-xl flex items-center">
+              <div className={`py-2 px-3 bg-[#f3f3f5] rounded-xl flex items-center ${existingInfo.toLowerCase().includes('email') ? 'border border-red-500' : ''}`}>
                 <span>
                   <Mail size={14} />
                 </span>
@@ -132,7 +135,7 @@ export default function Signup() {
             {/* Username */}
             <div className="flex flex-col">
               <label>Username</label>
-              <div className="py-2 px-3 bg-[#f3f3f5] rounded-xl flex items-center">
+              <div className={`py-2 px-3 bg-[#f3f3f5] rounded-xl flex items-center ${existingInfo.toLowerCase().includes('username') ? 'border border-red-500' : ''}`}>
                 <span>
                   <User size={14} />
                 </span>
@@ -300,7 +303,11 @@ export default function Signup() {
                 />
               </div>
             )}
-
+            {existingInfo && (
+              <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded-md col-span-2">
+                {existingInfo}
+              </div>
+            )}
             {/* Supervisor Fields */}
             {userType === "supervisor" && (
               <div className="flex flex-col md:col-span-2">
