@@ -44,18 +44,14 @@ interface ProgressData {
 
 export default function NonStudent_LogBook() {
   const { data: session } = useSession();
-  const { 
-    progressData, 
-    isLoading, 
-    fetchProgressData, 
-    refreshAfterLogChange,
-  } = useNonStudentStore();
+  const { progressData, isLoading, fetchProgressData, refreshAfterLogChange } =
+    useNonStudentStore();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [deleteModal, setDeleteModal] = useState<boolean>(false);
   const [selectedLog, setSelectedLog] = useState<ProgressData | null>(null);
   const [tasks, setTasks] = useState<string[]>([]);
   const [currentTask, setCurrentTask] = useState<string>("");
-
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [totalHours, setTotalHours] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filteredData, setFilteredData] = useState<ProgressData[]>([]);
@@ -75,19 +71,55 @@ export default function NonStudent_LogBook() {
     link.click();
   };
 
+  // Handle edit button click
+  const handleEditClick = (log: ProgressData) => {
+    setFormData({
+      date: log.date,
+      hours_worked: log.hours_worked.toString(),
+      entry_type: log.entry_type,
+      title: log.title,
+      description: log.description,
+      attachments: log.attachments
+    });
+    setTasks(log.tasks_completed);
+    setSelectedLog(log);
+    setIsEditing(true);
+    setIsModalOpen(true);
+  };
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setIsEditing(false);
+    setSelectedLog(null);
+    setTasks([]);
+    setFormData({
+      date: "",
+      hours_worked: "",
+      entry_type: "daily",
+      title: "",
+      description: "",
+      attachments: [],
+    });
+  };
+
+
   //For Deleting Log
   const handleDeleteLog = async () => {
     if (!selectedLog) return;
     try {
-      const response = await fetch("/api/request/LogBookRequest/logbook_delete", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email_add: session?.user?.email,
-          title: selectedLog.title
-        })
-      });
-      
+      const response = await fetch(
+        "/api/request/LogBookRequest/logbook_delete",
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email_add: session?.user?.email,
+            title: selectedLog.title,
+          }),
+        }
+      );
+
       if (response.ok) {
         setDeleteModal(false);
         setSelectedLog(null);
@@ -118,10 +150,10 @@ export default function NonStudent_LogBook() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    //Value added to holder
+    
     const progress = {
       date: formData.date,
-      time: new Date().toLocaleTimeString([], {
+      time: isEditing ? selectedLog?.time : new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       }),
@@ -132,36 +164,48 @@ export default function NonStudent_LogBook() {
       tasks_completed: tasks,
       attachments: formData.attachments,
     };
-    //For Checking Request Body
-    const requestBody = {
-      email_add: session?.user?.email,
-      account_type: "non-student",
-      user_name: session?.user?.name,
-      progress: progress,
-    };
 
     try {
-      //API Call PUT for adding log/updating log
-      const response = await fetch("/api/request/LogBookRequest/logbook", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (response.ok) {
-        setIsModalOpen(false);
-        setTasks([]);
-        setFormData({
-          date: "",
-          hours_worked: "",
-          entry_type: "daily",
-          title: "",
-          description: "",
-          attachments: [],
+      if (isEditing) {
+        // Update existing log
+        const response = await fetch("/api/request/LogBookRequest/logbook_update", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email_add: session?.user?.email,
+            account_type: "non-student",
+            user_name: session?.user?.name,
+            originalTitle: selectedLog?.title,
+            updatedProgress: progress
+          }),
         });
-        // Refresh data after adding log
-        if (session?.user?.email) {
-          refreshAfterLogChange(session.user.email);
+        
+        if (response.ok) {
+          handleModalClose();
+          if (session?.user?.email) {
+            refreshAfterLogChange(session.user.email);
+          }
+        }
+      } else {
+        // Add new log
+        const requestBody = {
+          email_add: session?.user?.email,
+          account_type: "non-student",
+          user_name: session?.user?.name,
+          progress: progress,
+        };
+        
+        const response = await fetch("/api/request/LogBookRequest/logbook", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        });
+
+        if (response.ok) {
+          handleModalClose();
+          if (session?.user?.email) {
+            refreshAfterLogChange(session.user.email);
+          }
         }
       }
     } catch (error) {
@@ -212,7 +256,10 @@ export default function NonStudent_LogBook() {
           </span>
         </h1>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setIsEditing(false);
+            setIsModalOpen(true);
+          }}
           className="flex items-center gap-2 xs:py-2 xs:px-3 p-2 bg-blue-500 rounded-lg text-white xs:text-sm text-[10px]"
         >
           <Plus size={12} /> Add New Log
@@ -281,7 +328,11 @@ export default function NonStudent_LogBook() {
             {/* Functions */}
             <div className="flex gap-3 items-center">
               <Eye size={18} />
-              <Edit size={18} />
+              <Edit 
+                size={18} 
+                className="cursor-pointer"
+                onClick={() => handleEditClick(log)}
+              />
               <Trash2
                 size={18}
                 className="text-red-500 cursor-pointer"
@@ -328,6 +379,7 @@ export default function NonStudent_LogBook() {
                 </div>
               </>
             )}
+
           </div>
         </div>
       ))}
@@ -346,9 +398,9 @@ export default function NonStudent_LogBook() {
         <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-5">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Add New Log</h2>
+              <h2 className="text-xl font-semibold">{isEditing ? "Edit Log" : "Add New Log"}</h2>
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={handleModalClose}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <X size={20} />
@@ -364,7 +416,8 @@ export default function NonStudent_LogBook() {
                     onChange={(e) =>
                       setFormData({ ...formData, date: e.target.value })
                     }
-                    className="w-full p-2 border rounded-lg"
+                    className={`w-full p-2 border rounded-lg ${isEditing ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                    readOnly={isEditing}
                   />
                 </div>
                 <div>
@@ -378,7 +431,8 @@ export default function NonStudent_LogBook() {
                     onChange={(e) =>
                       setFormData({ ...formData, hours_worked: e.target.value })
                     }
-                    className="w-full p-2 border rounded-lg"
+                    readOnly={isEditing}
+                    className={`w-full p-2 border rounded-lg ${isEditing ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   />
                 </div>
               </div>
@@ -515,7 +569,7 @@ export default function NonStudent_LogBook() {
               <div className="flex gap-2 pt-4">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={handleModalClose}
                   className="flex-1 py-2 px-4 border rounded-lg hover:bg-gray-50"
                 >
                   Cancel
@@ -524,7 +578,7 @@ export default function NonStudent_LogBook() {
                   type="submit"
                   className="flex-1 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
                 >
-                  Save Log
+                  {isEditing ? "Update Log" : "Save Log"}
                 </button>
               </div>
             </form>

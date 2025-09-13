@@ -19,6 +19,9 @@ export async function DELETE(request: NextRequest) {
        WHERE email_add = $2`,
       [title, email_add]
     );
+
+
+    
     return new Response(
       JSON.stringify({ message: "Log entry deleted successfully" }),
       { status: 200 }
