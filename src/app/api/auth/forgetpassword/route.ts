@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Pool } from 'pg';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
 
 export async function POST(request: NextRequest) {
   const client = await pool.connect();
@@ -36,8 +43,8 @@ export async function POST(request: NextRequest) {
     );
     
     // Send email
-    await resend.emails.send({
-      from: 'onboarding@resend.dev',
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
       to: email,
       subject: 'Reset Your Password - OJT Tracking',
       html: `
@@ -49,6 +56,7 @@ export async function POST(request: NextRequest) {
         <p>This link expires in 1 hour.</p>
       `
     });
+
     return NextResponse.json({ message: 'Reset email sent successfully' });
   } catch (error) {
     console.error('Forgot password error:', error);
