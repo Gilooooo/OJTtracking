@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     // Check if token is expired (1 hour)
     const tokenAge = Date.now() - new Date(created_date).getTime();
     const oneHour = 3600000; // 1 hour in milliseconds
-    if (tokenAge < oneHour) {
+    if (tokenAge > oneHour) {
       return NextResponse.json({ error: 'Token has expired' }, { status: 400 });
     }
 
