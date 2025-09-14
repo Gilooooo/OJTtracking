@@ -2,6 +2,7 @@
 import { Eye, EyeClosed, Lock } from "lucide-react";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Loading_Page from "../Loading";
 
 function ChangePasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -157,7 +158,7 @@ export default function ChangePassword() {
   return (
     <Suspense fallback={
       <main className="bg-white h-[100dvh] text-[#242323] flex justify-center items-center">
-        <div className="text-center">Loading...</div>
+        <Loading_Page/>
       </main>
     }>
       <ChangePasswordForm />
