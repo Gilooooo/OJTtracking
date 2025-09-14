@@ -1,9 +1,9 @@
 "use client"
 import { Eye, EyeClosed, Lock } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function ChangePassword() {
+function ChangePasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
@@ -150,5 +150,17 @@ export default function ChangePassword() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function ChangePassword() {
+  return (
+    <Suspense fallback={
+      <main className="bg-white h-[100dvh] text-[#242323] flex justify-center items-center">
+        <div className="text-center">Loading...</div>
+      </main>
+    }>
+      <ChangePasswordForm />
+    </Suspense>
   );
 }
