@@ -3,7 +3,6 @@ import {
   CheckCircle,
   Clock,
   Edit,
-  Eye,
   FileText,
   Plus,
   Search,
@@ -327,7 +326,6 @@ export default function NonStudent_LogBook() {
             </div>
             {/* Functions */}
             <div className="flex gap-3 items-center">
-              <Eye size={18} />
               <Edit 
                 size={18} 
                 className="cursor-pointer"

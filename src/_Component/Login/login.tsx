@@ -3,9 +3,12 @@ import { Eye, EyeClosed, Lock, Mail } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import ForgetPassModal from "../Modal/ForgetPassword_Modal";
 
 export default function Login() {
   const [CheckPass, SetCheckPass] = useState<boolean>(false);
+  const [checked, setChecked] = useState<boolean>(false);
+  const [forgetPass, setForgetPass] = useState<boolean>(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const {data: session} = useSession();
@@ -34,6 +37,9 @@ export default function Login() {
       });
       
       if (result?.ok && !result?.error) {
+        if(checked){
+          localStorage.setItem('rememberedEmail', formData.email);
+        }
         router.push('/Dashboard');
       } else {
         setError('Invalid email or password. Please try again.');
@@ -51,7 +57,14 @@ export default function Login() {
       router.push('/Dashboard');
     }}, [session, router]);
 
+useEffect(() => {
+  const rememberedEmail = localStorage.getItem('rememberedEmail');
+  if (rememberedEmail) {
+    setFormData(prevFormData => ({ ...prevFormData, email: rememberedEmail }));
+  }
+}, []);
 
+  
   return (
     <main className="bg-white h-[100dvh] text-[#242323] flex justify-center items-center ">
       <section className="m-auto flex justify-center items-center sm:p-0 p-2 w-full">
@@ -95,12 +108,12 @@ export default function Login() {
             </div>
             <div className="flex w-full justify-between items-center-safe">
               <div className="flex gap-1 items-center justify-center text-sm">
-                <input type="checkbox" name="remember" id="remember" className="  " />
+                <input type="checkbox" name="remember" id="remember" checked={checked} onChange={() => setChecked(!checked)} />
                 <label htmlFor="remember" className="">
                   Remember Me
                 </label>
               </div>
-              <a className="text-blue-400">Forget Password?</a>
+              <button className="text-blue-400" onClick={() => setForgetPass(true)}>Forget Password?</button>
             </div>
             {error && (
               <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">
@@ -121,6 +134,10 @@ export default function Login() {
           </div>
         </form>
       </section>
+      {
+        forgetPass && <ForgetPassModal setForgetPass={setForgetPass}/>
+      }
+      
     </main>
   );
 }
