@@ -113,7 +113,7 @@ useEffect(() => {
                   Remember Me
                 </label>
               </div>
-              <button className="text-blue-400" onClick={() => setForgetPass(true)}>Forget Password?</button>
+              <span className="text-blue-400" onClick={() => setForgetPass(true)}>Forget Password?</span>
             </div>
             {error && (
               <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">

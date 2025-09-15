@@ -231,6 +231,7 @@ export default function Signup() {
                     type="text"
                     className="py-2 px-3 bg-[#f3f3f5] rounded-xl focus:outline-none"
                     placeholder="Enter student ID"
+                    required
                   />
                 </div>
                 <div className="flex flex-col">
@@ -242,6 +243,7 @@ export default function Signup() {
                     type="text"
                     className="py-2 px-3 bg-[#f3f3f5] rounded-xl focus:outline-none"
                     placeholder="Enter your course"
+                    required
                   />
                 </div>
                 <div className="flex flex-col">
@@ -253,6 +255,7 @@ export default function Signup() {
                     type="text"
                     className="py-2 px-3 bg-[#f3f3f5] rounded-xl focus:outline-none"
                     placeholder="Enter school name"
+                    required
                   />
                 </div>
                 <div className="flex flex-col">
@@ -263,6 +266,7 @@ export default function Signup() {
                       name="yearLevel"
                       value={formData.yearLevel}
                       onChange={handleInputChange}
+                      required
                     >
                       <option value="">Select year level</option>
                       <option value="1st">1st Year</option>
@@ -284,6 +288,7 @@ export default function Signup() {
                     type="number"
                     className="py-2 px-3 bg-[#f3f3f5] rounded-xl focus:outline-none"
                     placeholder="Enter required hours"
+                    required
                   />
                 </div>
               </>
@@ -300,6 +305,7 @@ export default function Signup() {
                   type="number"
                   className="py-2 px-3 bg-[#f3f3f5] rounded-xl focus:outline-none"
                   placeholder="Enter required hours"
+                  required
                 />
               </div>
             )}
@@ -321,6 +327,7 @@ export default function Signup() {
                     type="text"
                     className="focus:outline-none flex-1 px-3 bg-transparent"
                     placeholder="Enter company name"
+                    required
                   />
                 </div>
               </div>

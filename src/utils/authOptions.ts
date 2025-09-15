@@ -51,7 +51,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
           return null;
         } catch (error) {
-          console.error('Auth error:', error);
+          console.error('Error during authentication:', error);
           return null;
         } finally {
           client.release();
