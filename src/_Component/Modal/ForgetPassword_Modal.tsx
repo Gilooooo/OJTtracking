@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { useState } from "react";
-import SuccessModal from "./Success_Modal.tsx";
+import SuccessModal from "./Success_Modal";
 
 interface ForgetPassModalProps {
   setForgetPass: (value: boolean) => void;
