@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import Loading_Page from "@/_Component/Loading";
+import Loading_Page from "@/_Component/Loading/Loading";
 import Delete_Modal from "@/_Component/Modal/Deleting_Modal";
 import { useNonStudentStore } from "@/store/useNonStudentstore";
 

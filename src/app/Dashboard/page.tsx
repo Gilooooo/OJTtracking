@@ -1,5 +1,5 @@
 "use client";
-import Loading_Page from "@/_Component/Loading";
+import Loading_Page from "@/_Component/Loading/Loading";
 import MobileNavBar from "@/_Component/Navigation_Bar/MobileNavBar";
 import NavBar from "@/_Component/Navigation_Bar/NavBar";
 import NonStudent_dashboard from "@/_Component/NotStudent/Dashboard/Nonstudent_dashboard";

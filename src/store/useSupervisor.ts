@@ -6,17 +6,34 @@ interface UserInfo {
   company?: string;
 }
 
+interface Room {
+  room_code: string;
+  room_name: string;
+  room_description: string;
+  company: string;
+  company_location: string;
+  supervisor_email: string;
+  supervisor_username: string;
+  supervisor_name: string;
+  date: string;
+}
+
 interface SupervisorStore {
   userInfo: UserInfo;
+  rooms: Room[];
   isLoading: boolean;
+  isLoadingRooms: boolean;
   lastFetchedUserId: string | null;
 
   fetchUserData: (userId: string) => Promise<void>;
+  fetchRooms: (email: string, username: string) => Promise<void>;
 }
 
 export const useSupervisorStore = create<SupervisorStore>((set, get) => ({
     userInfo: {},
+    rooms: [],
     isLoading: false,
+    isLoadingRooms: false,
     lastFetchedUserId: null,
 
     fetchUserData: async (userId: string) => {
@@ -39,7 +56,6 @@ export const useSupervisorStore = create<SupervisorStore>((set, get) => ({
             return;
         }
         
-        console.log('Making API call...');
         try {
             set({ isLoading: true });
             const response = await fetch(`/api/request/supervisor?id=${userId}`);
@@ -50,7 +66,6 @@ export const useSupervisorStore = create<SupervisorStore>((set, get) => ({
                 isLoading: false, 
                 lastFetchedUserId: userId 
             });
-            console.log('API call completed, data saved');
         } catch (error) {
             console.error('Error fetching user data:', error);
             set({ isLoading: false });
@@ -58,5 +73,23 @@ export const useSupervisorStore = create<SupervisorStore>((set, get) => ({
     },
     setLoading: (loading: boolean) => {
         set({ isLoading: loading });
+    },
+
+    fetchRooms: async (email: string, username: string) => {
+        try {
+            set({ isLoadingRooms: true });
+            const response = await fetch(`/api/request/Room/Getroom?email=${email}&username=${username}`);
+            const data = await response.json();
+            
+            if (response.ok) {
+                set({ rooms: data.rooms, isLoadingRooms: false });
+            } else {
+                console.error('Failed to fetch rooms:', data.error);
+                set({ isLoadingRooms: false });
+            }
+        } catch (error) {
+            console.error('Error fetching rooms:', error);
+            set({ isLoadingRooms: false });
+        }
     }
 }));

@@ -24,19 +24,52 @@ export async function PUT(request: NextRequest) {
     if (!roomName || !roomDescription || !roomCode) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
-    console.log("Received Data:", {company, roomCode, roomName, roomDescription, supervisorEmail, supervisorUsername, companyLocation, supervisorName});
+    //Insert room into database
+     await client.query(
+      `INSERT INTO room_created (user_name, supervisor_name, supervisor_email, company, room_description, room_name, room_code, company_location, date  ) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW()) `,
+      [supervisorUsername, supervisorName, supervisorEmail, company, roomDescription, roomName, roomCode, companyLocation]
+    );
+
+    return NextResponse.json({
+      message: 'Room created successfully',
+    });
+  } catch (error) {
+    console.error('Error creating room:', error);
+    return NextResponse.json({ error: 'Failed to create room' }, { status: 500 });
+  } finally {
+    client.release();
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const client = await pool.connect();
+
+  try {
+    const {
+      company,
+      roomCode,
+      roomName,
+      roomDescription,
+      supervisorEmail,
+      supervisorUsername,
+      companyLocation,
+      supervisorName
+    } = await request.json();
+
+    // Validate required fields
+    if (!roomName || !roomDescription || !roomCode) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
     //Insert room into database
     await client.query(
-      `INSERT INTO room_created (user_name, supervisor_name, company, room_name, room_code, company_location, date) 
-       VALUES ($1, $2, $3, $4, $5, $6, NOW()) 
-       RETURNING *`,
-      [supervisorUsername, supervisorName, company, roomName, roomCode, companyLocation]
+      `INSERT INTO room_created (user_name, supervisor_name, supervisor_email, company, room_description, room_name, room_code, company_location, date), $5, $6, NOW() `,
+      [supervisorUsername, supervisorName, supervisorEmail, company, roomDescription, roomName, roomCode, companyLocation]
     );
 
     return NextResponse.json({ 
       message: 'Room created successfully',
     });
-
   } catch (error) {
     console.error('Error creating room:', error);
     return NextResponse.json({ error: 'Failed to create room' }, { status: 500 });

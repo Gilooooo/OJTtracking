@@ -1,4 +1,4 @@
-import Loading_Page from "@/_Component/Loading";
+import Loading_Page from "@/_Component/Loading/Loading";
 import {
   BookOpen,
   // Building,

@@ -8,8 +8,8 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import Loading_Page from "@/_Component/Loading";
 import { useNonStudentStore } from "@/store/useNonStudentstore";
+import Loading_Page from "@/_Component/Loading/Loading";
 
 interface NonStudentDashboardProps {
   setActiveSection: (section: string) => void;

@@ -1,7 +1,7 @@
 import { Clock, Edit, Mail, Phone, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import Loading_Page from "@/_Component/Loading";
+import Loading_Page from "@/_Component/Loading/Loading";
 import { useNonStudentStore } from "@/store/useNonStudentstore";
 
 interface ProfileData {

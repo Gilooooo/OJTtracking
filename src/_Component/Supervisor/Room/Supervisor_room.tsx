@@ -1,4 +1,5 @@
-import Loading_Page from "@/_Component/Loading";
+import Loading_Page from "@/_Component/Loading/Loading";
+import Creating_Loading from "@/_Component/Loading/Creating_Loading";
 import SuccessModal from "@/_Component/Modal/Success_Modal";
 import { useSupervisorStore } from "@/store/useSupervisor";
 import { useSession } from "next-auth/react";
@@ -17,13 +18,14 @@ interface FormData {
 
 export default function Supervisor_Room() {
   const { data: session } = useSession();
-  const { isLoading, userInfo, fetchUserData } = useSupervisorStore();
+  const { isLoading, rooms, userInfo, fetchUserData, fetchRooms } = useSupervisorStore();
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
   const randomChoices =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   const [randomCode, setRandomCode] = useState<string>("");
   const [showModal, setShowModal] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
+  const [inputRequired, setInputRequired] = useState<boolean>(false);
   const [formData, setFormData] = useState<FormData>({
     company: "",
     roomCode: "",
@@ -43,12 +45,13 @@ export default function Supervisor_Room() {
   };
 
   const handleCreateRoom = async () => {
-    if (!formData.roomName.trim() || !formData.roomDescription.trim()) {
-      alert("Please fill in all fields");
+    if (!formData.roomName.trim() || !formData.roomDescription.trim() || !formData.companyLocation.trim()) {
+      setInputRequired(true);
       return;
     }
-
+    setInputRequired(false);
     setIsCreating(true);
+    
     try {
       const submitData = {
         company: userInfo.company?.trim() || "",
@@ -60,20 +63,23 @@ export default function Supervisor_Room() {
         supervisorUsername: session?.user?.username || "",
         supervisorName: session?.user?.name || "",
       };
-
-      console.log("Form Data:", submitData);
-
+      
       const response = await fetch("/api/request/Room/supervisor", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submitData),
       });
-
+      
       if (response.ok) {
+        await fetchRooms(session?.user.email || "", session?.user.username || "");
+        setShowSuccess(true);
         handleCancel();
+      } else {
+        alert("Failed to create room. Please try again.");
       }
     } catch (error) {
       console.error("Error creating room:", error);
+      alert("Network error. Please try again.");
     } finally {
       setIsCreating(false);
     }
@@ -81,7 +87,7 @@ export default function Supervisor_Room() {
 
   const handleCancel = () => {
     setShowModal(false);
-    setShowSuccess(true);
+    setInputRequired(false);
     setFormData({
       company: "",
       roomCode: "",
@@ -98,29 +104,55 @@ export default function Supervisor_Room() {
     if (session?.user?.id && !userInfo.id) {
       fetchUserData(session.user.id);
     }
-  }, [session?.user?.id, userInfo.id, fetchUserData]);
+    if (session?.user?.email && session?.user?.username) {
+      fetchRooms(session.user.email, session.user.username);
+    }
+  }, [userInfo.id, session?.user?.id, session?.user?.email, session?.user?.username, fetchRooms, fetchUserData]);
 
   if (isLoading) {
     return <Loading_Page />;
   }
 
+  if (isCreating) {
+    return <Creating_Loading />;
+  }
+
   if (showSuccess) {
-    <SuccessModal
+    return (
+      <SuccessModal
         title="Room Created!"
         message="The room has been created successfully."
         onClose={() => setShowSuccess(false)}
-    />
+      />
+    );
   }
   return (
-    <main>
+    <main className="space-y-3.5">
       <button
         className="px-3 py-2 rounded-lg shadow bg-white"
         onClick={generateRandomString}
       >
         + Generate Room
       </button>
-      <span onClick={() => console.log(userInfo)}>{randomCode}</span>
-
+      {/* Here */}
+      <section className={`${rooms.length > 1 ? "grid-cols-2" : "grid-cols-1"} grid gap-4`}>
+        {rooms.map((room) => (
+          <div key={room.room_code} className="bg-white rounded-lg shadow-lg p-4 border">
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="font-semibold text-lg text-gray-800">{room.room_name}</h3>
+              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                {room.room_code}
+              </span>
+            </div>
+            <p className="text-gray-600 text-sm mb-3">{room.room_description}</p>
+            <div className="space-y-1 text-xs text-gray-500">
+              <p><span className="font-medium">Company:</span> {room.company}</p>
+              <p><span className="font-medium">Location:</span> {room.company_location}</p>
+              <p><span className="font-medium">Created:</span> {new Date(room.date).toLocaleDateString()}</p>
+            </div>
+          </div>
+        ))}
+      </section>
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
@@ -149,7 +181,7 @@ export default function Supervisor_Room() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
                 />
               </div>
-                   <div>
+              <div>
                 <label className="block text-sm font-medium mb-1">
                   Company Location
                 </label>
@@ -157,12 +189,20 @@ export default function Supervisor_Room() {
                   type="text"
                   value={formData.companyLocation}
                   onChange={(e) =>
-                    setFormData({ ...formData, companyLocation: e.target.value })
+                    setFormData({
+                      ...formData,
+                      companyLocation: e.target.value,
+                    })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter Company Location"
                   required
                 />
+                {!formData.companyLocation.trim() && inputRequired && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Company location is required.
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -176,10 +216,13 @@ export default function Supervisor_Room() {
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter room name"
-                  required
                 />
+              {!formData.roomName.trim() && inputRequired && (
+                <p className="text-red-500 text-xs mt-1">
+                  Room name is required.
+                </p>
+              )}
               </div>
-
               <div>
                 <label className="block text-sm font-medium mb-1">
                   Room Description
@@ -195,8 +238,12 @@ export default function Supervisor_Room() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter room description"
                   rows={3}
-                  required
                 />
+                {!formData.roomDescription.trim() && inputRequired && (
+                  <p className="text-red-500 text-xs">
+                    Room description is required.
+                  </p>
+                )}
               </div>
             </div>
 

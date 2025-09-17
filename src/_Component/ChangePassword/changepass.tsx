@@ -2,7 +2,7 @@
 import { Eye, EyeClosed, Lock } from "lucide-react";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Loading_Page from "../Loading";
+import Loading_Page from "../Loading/Loading";
 
 function ChangePasswordForm() {
   const [showPassword, setShowPassword] = useState(false);

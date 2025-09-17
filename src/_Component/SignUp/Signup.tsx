@@ -1,6 +1,5 @@
 "use client";
 import {
-  Building,
   ChevronDown,
   Eye,
   EyeClosed,
@@ -48,41 +47,40 @@ export default function Signup() {
     e.preventDefault();
     console.log(formData);
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          accountType: userType
-        })
+          accountType: userType,
+        }),
       });
 
       const result = await response.json();
       if (response.ok) {
         setExistingInfo("");
-        alert('Account created successfully! You can now log in.');
-        router.push('/Login');
+        alert("Account created successfully! You can now log in.");
+        router.push("/Login");
       } else {
         setExistingInfo(result.error);
       }
     } catch (error) {
       console.error("Network error", error);
-      alert('Network error occurred');
+      alert("Network error occurred");
     }
   };
 
   useEffect(() => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       studentId: "",
       course: "",
       school: "",
       yearLevel: "",
       hoursRequired: "",
-      company: ""
+      company: "",
     }));
-  }, [userType])
-
+  }, [userType]);
 
   return (
     <main className="bg-white min-h-screen text-[#242323] flex justify-center items-center py-8">
@@ -97,7 +95,13 @@ export default function Signup() {
             {/* Email */}
             <div className="flex flex-col">
               <label>Email Address</label>
-              <div className={`py-2 px-3 bg-[#f3f3f5] rounded-xl flex items-center ${existingInfo.toLowerCase().includes('email') ? 'border border-red-500' : ''}`}>
+              <div
+                className={`py-2 px-3 bg-[#f3f3f5] rounded-xl flex items-center ${
+                  existingInfo.toLowerCase().includes("email")
+                    ? "border border-red-500"
+                    : ""
+                }`}
+              >
                 <span>
                   <Mail size={14} />
                 </span>
@@ -135,7 +139,13 @@ export default function Signup() {
             {/* Username */}
             <div className="flex flex-col">
               <label>Username</label>
-              <div className={`py-2 px-3 bg-[#f3f3f5] rounded-xl flex items-center ${existingInfo.toLowerCase().includes('username') ? 'border border-red-500' : ''}`}>
+              <div
+                className={`py-2 px-3 bg-[#f3f3f5] rounded-xl flex items-center ${
+                  existingInfo.toLowerCase().includes("username")
+                    ? "border border-red-500"
+                    : ""
+                }`}
+              >
                 <span>
                   <User size={14} />
                 </span>
@@ -220,7 +230,7 @@ export default function Signup() {
             </div>
 
             {/* Student Fields */}
-            {userType === "student" && (
+            {/* {userType === "student" && (
               <>
                 <div className="flex flex-col">
                   <label>Student ID</label>
@@ -292,7 +302,7 @@ export default function Signup() {
                   />
                 </div>
               </>
-            )}
+            )} */}
 
             {/* Non-Student Fields */}
             {userType === "non-student" && (
@@ -315,7 +325,7 @@ export default function Signup() {
               </div>
             )}
             {/* Supervisor Fields */}
-            {userType === "supervisor" && (
+            {/* {userType === "supervisor" && (
               <div className="flex flex-col md:col-span-2">
                 <label>Company</label>
                 <div className="py-2 px-3 bg-[#f3f3f5] rounded-xl flex items-center">
@@ -331,15 +341,25 @@ export default function Signup() {
                   />
                 </div>
               </div>
-            )}
+            )} */}
           </div>
 
-          <button
-            type="submit"
-            className="bg-blue-500 text-white py-2 w-full mt-6 rounded-xl text-sm"
-          >
-            Create Account
-          </button>
+          {userType != "non-student" ? (
+            <button
+              type="submit"
+              className="bg-gray-500 text-white py-2 w-full mt-6 rounded-xl text-sm"
+              disabled
+            >
+              Under construction
+            </button>
+          ) : (
+            <button
+              type="submit"
+              className="bg-blue-500 text-white py-2 w-full mt-6 rounded-xl text-sm"
+            >
+              Create account
+            </button>
+          )}
 
           <p className="text-center text-sm mt-4">
             Already have an account?{" "}
