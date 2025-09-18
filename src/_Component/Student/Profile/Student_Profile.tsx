@@ -1,3 +1,5 @@
+import Loading_Page from "@/_Component/Loading/Loading";
+import { useStudentStore } from "@/store/useStudentStore";
 import {
   Award,
   ChevronDown,
@@ -14,18 +16,10 @@ import {
   X,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-
-interface Data {
-  name?: string;
-  id?: string;
-  email?: string;
-  role?: string;
-  phone?: string;
-}
+import { useEffect, useMemo, useState } from "react";
 
 interface StudentInfo {
-  student_id: string;
+  student_id?: string | undefined;
   course: string;
   school: string;
   year_level: string;
@@ -34,11 +28,19 @@ interface StudentInfo {
 
 export default function Student_Profile() {
   const { data: session } = useSession();
-  const [studentData, setStudentData] = useState<Data>({});
   const [initialName, setInitialName] = useState<string>("");
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [dropdown, setDropdown] = useState<boolean>(false);
+  const { userInfo, fetchUserData, isLoading } = useStudentStore();
+
+  const progressPercentage = useMemo(
+    () => ((40 / (userInfo.hours_required || 1)) * 100).toFixed(2),
+    [userInfo.hours_required]
+  );
+
+  const progressRemaining = useMemo(() => (((userInfo.hours_required || 0) - 40)), [userInfo.hours_required])
+
   useEffect(() => {
     // Initial Name Function
     const InitialNaming = () => {
@@ -47,40 +49,40 @@ export default function Student_Profile() {
       setInitialName((t?.[0]?.[0] || "") + (t?.[1]?.[0] || ""));
     };
     InitialNaming();
-    // Fetch Data GET
-    const fetchData = async () => {
-      if (session?.user?.id) {
-        try {
-          const response = await fetch(
-            `/api/request/student/info?id=${session.user.id}`
-          );
-          const data = await response.json();
-
-          if (response.ok) {
-            setStudentInfo(data);
-          } else {
-            console.error("Error:", data.error);
-          }
-        } catch (error) {
-          console.error("Fetch error:", error);
-        }
-      }
-    };
-    fetchData();
-
-    setStudentData({
-      name: session?.user?.name || undefined,
-      id: session?.user?.id || undefined,
-      email: session?.user?.email || undefined,
-      role: session?.user?.role || undefined,
-      phone: session?.user?.phone || undefined,
-    });
   }, [session]);
+
+  useEffect(() => {
+    if (session?.user.id) {
+      fetchUserData(session.user.id);
+      setStudentInfo({
+        student_id: userInfo.student_id,
+        course: userInfo.course || "",
+        school: userInfo.school || "",
+        year_level: userInfo.year_level || "",
+        hours_required: userInfo.hours_required || 0,
+      });
+    }
+  }, [
+    session?.user.id,
+    fetchUserData,
+    userInfo.student_id,
+    userInfo.course,
+    userInfo.school,
+    userInfo.year_level,
+    userInfo.hours_required,
+  ]);
+
+  if (isLoading) {
+    return <Loading_Page />;
+  }
 
   return (
     <main className="text-black space-y-3.5">
       <div className="flex items-center justify-between">
-        <h1 className="flex flex-col sm:text-2xl text-lg font-semibold">
+        <h1
+          className="flex flex-col sm:text-2xl text-lg font-semibold"
+          onClick={() => console.log(userInfo)}
+        >
           My Profile
           <span className="sm:text-sm text-xs font-light">
             Manage your personal information and OJT details
@@ -102,7 +104,7 @@ export default function Student_Profile() {
             </div>
             {/* Full Name */}
             <h1 className="text-center mt-4 font-semibold text-lg">
-              {studentData.name}
+              {session?.user.name}
             </h1>
             {/* Course */}
             <span className="text-gray-500 text-sm text-center">
@@ -121,7 +123,7 @@ export default function Student_Profile() {
                 <span className="text-xs flex flex-col items-start text-gray-400">
                   Email
                   <span className="text-black font-semibold">
-                    {studentData.email}
+                    {session?.user.email}
                   </span>
                 </span>
               </div>
@@ -130,7 +132,7 @@ export default function Student_Profile() {
                 <span className="text-xs flex flex-col items-start text-gray-400">
                   Phone
                   <span className="text-black font-semibold">
-                    +63 {studentData.phone}
+                    +63 {session?.user.phone}
                   </span>
                 </span>
               </div>
@@ -163,10 +165,6 @@ export default function Student_Profile() {
                 <span className="text-black font-semibold">
                   {studentInfo?.year_level}
                 </span>
-              </span>
-              <span className="text-xs flex flex-col items-start text-gray-400">
-                GWA
-                <span className="text-black font-semibold">{0}</span>
               </span>
             </div>
           </div>
@@ -226,11 +224,11 @@ export default function Student_Profile() {
               {/* Progress in percentage */}
               <div className="text-end">
                 <p className="xs:text-2xl text-lg font-semibold text-blue-600">
-                  {((40 / (studentInfo?.hours_required || 0)) * 100).toFixed(2)}
+                  {progressPercentage}
                   %
                 </p>
                 <p className="xs:text-sm text-xs">
-                  {(studentInfo?.hours_required || 0) - 0} hours remaining
+                  {progressRemaining} hours remaining
                 </p>
               </div>
             </div>
@@ -247,7 +245,7 @@ export default function Student_Profile() {
             </div>
             <div className="w-full flex sm:flex-row  flex-col items-center gap-3 mt-2">
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">
-                {(studentInfo?.hours_required || 0) / 8}{" "}
+                {Math.ceil(((studentInfo?.hours_required || 0) - 40) / 8)}{" "}
                 <span className="text-sm font-extralight">Days Left</span>
               </h1>
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">
@@ -298,7 +296,7 @@ export default function Student_Profile() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Edit Profile</h2>
@@ -316,7 +314,7 @@ export default function Student_Profile() {
                 </label>
                 <input
                   type="text"
-                  defaultValue={studentData.name}
+                  defaultValue={session?.user.name || ""}
                   className="w-full py-1 px-3 border rounded-lg focus:outline-none"
                 />
               </div>
@@ -324,7 +322,7 @@ export default function Student_Profile() {
                 <label className="block text-sm font-medium mb-1">Email</label>
                 <input
                   type="email"
-                  defaultValue={studentData.email}
+                  defaultValue={session?.user.email || ""}
                   className="w-full py-1 px-3 border rounded-lg focus:outline-none"
                 />
               </div>
@@ -332,7 +330,7 @@ export default function Student_Profile() {
                 <label className="block text-sm font-medium mb-1">Phone</label>
                 <input
                   type="tel"
-                  defaultValue={studentData.phone}
+                  defaultValue={session?.user.phone}
                   className="w-full py-1 px-3 border rounded-lg focus:outline-none"
                 />
               </div>
@@ -374,23 +372,13 @@ export default function Student_Profile() {
                     className="w-full py-1 px-3 border rounded-lg focus:outline-none"
                   />
                 </div>
-                      <div>
+                <div>
                   <label className="block text-sm font-medium mb-1">
                     Year Level
                   </label>
                   <input
                     type="text"
                     defaultValue={studentInfo?.year_level.trim()}
-                    className="w-full py-1 px-3 border rounded-lg focus:outline-none"
-                  />
-                </div>
-                      <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Gwa
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue={0}
                     className="w-full py-1 px-3 border rounded-lg focus:outline-none"
                   />
                 </div>

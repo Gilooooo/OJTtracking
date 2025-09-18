@@ -14,6 +14,7 @@ export async function GET(request : NextRequest){
             return new Response(JSON.stringify({error: 'ID required'}), {status: 400})
         }
         const accountResult = await client.query("SELECT * FROM students WHERE id = $1", [id])
+        console.log(accountResult.rows[0])
         return new Response(JSON.stringify(accountResult.rows[0]), {status: 200})
 
     }catch(error){

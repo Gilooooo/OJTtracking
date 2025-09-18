@@ -38,24 +38,13 @@ export const useSupervisorStore = create<SupervisorStore>((set, get) => ({
 
     fetchUserData: async (userId: string) => {
         const state = get();
-        
-        console.log('fetchUserData called for userId:', userId);
-        console.log('Current state:', {
-            lastFetchedUserId: state.lastFetchedUserId,
-            isLoading: state.isLoading
-        });
-        
         // Skip if already loading or already fetched this user
         if (state.isLoading) {
-            console.log('Already loading, skipping...');
             return;
         }
-        
         if (state.lastFetchedUserId === userId) {
-            console.log('Already have data for this user, skipping...');
             return;
         }
-        
         try {
             set({ isLoading: true });
             const response = await fetch(`/api/request/supervisor?id=${userId}`);
