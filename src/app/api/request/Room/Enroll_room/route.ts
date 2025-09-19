@@ -49,9 +49,7 @@ export async function PUT(request: NextRequest) {
         addedDays++;
       }
     }
-    
     const endDate = currentDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-
     // Enroll student
     await client.query(
       `INSERT INTO student_enrolled (
@@ -73,11 +71,10 @@ export async function PUT(request: NextRequest) {
         roomCode
       ]
     );
-
     await client.query("COMMIT");
-    
     return NextResponse.json({
       message: "Successfully enrolled in room",
+      roomInfo: checkRoom.rows[0],
     });
   } catch (error) {
     await client.query("ROLLBACK");

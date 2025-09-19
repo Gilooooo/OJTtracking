@@ -10,11 +10,13 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import SuccessModal from "@/_Component/Modal/Success_Modal";
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [userType, setUserType] = useState<string>("");
   const [existingInfo, setExistingInfo] = useState<string>("");
+  const [showSuccess, setShowSuccess] = useState<boolean>(false);
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
@@ -59,8 +61,7 @@ export default function Signup() {
       const result = await response.json();
       if (response.ok) {
         setExistingInfo("");
-        alert("Account created successfully! You can now log in.");
-        router.push("/Login");
+        setShowSuccess(true);
       } else {
         setExistingInfo(result.error);
       }
@@ -369,6 +370,17 @@ export default function Signup() {
           </p>
         </form>
       </section>
+
+      {showSuccess && (
+        <SuccessModal
+          title="Account Created!"
+          message="Your account has been created successfully. You can now sign in."
+          onClose={() => {
+            setShowSuccess(false);
+            router.push("/Login");
+          }}
+        />
+      )}
     </main>
   );
 }

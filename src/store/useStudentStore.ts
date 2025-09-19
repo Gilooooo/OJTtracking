@@ -9,28 +9,56 @@ interface UserInfo{
 }
 
 
+interface Room{
+    company:string;
+    room_code: string;
+    room_name: string;
+    room_description: string;
+    company_location: string;
+    supervisor_email: string;
+    supervisor_username: string;
+    supervisor_name: string;
+}
+
 interface StudentStore {
     userInfo: UserInfo
+    rooms: Room[];
     isLoading: boolean;
     fetchUserData: (userId: string) => Promise<void>;
     setLoading: (loading: boolean) => void;
+    fetchEnrolledRooms: (studentid: string, username:string) => Promise<void>;
 }
 
 export const useStudentStore = create<StudentStore>((set) => ({
     userInfo: {},
+    rooms: [],
     isLoading: false,
 
     fetchUserData: async (userId: string) => {
         try {
+            set({ isLoading: true });
             const response = await fetch(`/api/request/student/info?&id=${userId}`);
             const data = await response.json();
-            set({ userInfo: data });
+            set({ userInfo: data, isLoading: false });
         } catch (error) {
             console.error('Error fetching user data:', error);
+            set({ isLoading: false });
         }
     },
     setLoading: (loading: boolean) => {
         set({ isLoading: loading });
     },
 
+    fetchEnrolledRooms: async (studentid: string, username:string) => {
+        try {
+            set({ isLoading: true });
+            const response = await fetch(`/api/request/Room/Enrolled?student_id=${studentid}&user_name=${username}`);
+            const data = await response.json();
+            console.log('API Response:', data);
+            set({ rooms: data.rooms || [], isLoading: false });
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            set({ rooms: [], isLoading: false });
+        }
+    }
 }))
