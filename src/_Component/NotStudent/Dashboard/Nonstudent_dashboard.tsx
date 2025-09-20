@@ -42,14 +42,16 @@ export default function NonStudent_dashboard({
     if (diffMins > 0) return `${diffMins} min${diffMins > 1 ? "s" : ""} ago`;
     return "Just now";
   };
-  useEffect(() => {
-    if (session?.user?.id && session?.user?.email) {
-      // Only fetch if we don't have data or if it's been more than 5 minutes
-      if (!userInfo.id || !logtotals.total_hours) {
-        fetchUserData(session.user.id, session.user.email);
-      }
-    }
-  }, [session, userInfo.id, logtotals.total_hours, fetchUserData]);
+
+useEffect(() => {
+  if (
+    session?.user?.id &&
+    session?.user?.email &&
+    (!userInfo.id || !logtotals.total)
+  ) {
+    fetchUserData(session.user.id, session.user.email);
+  }
+}, [session?.user?.id, session?.user?.email, userInfo.id, logtotals.total, fetchUserData]);
 
   useEffect(() => {
     if (recentActivities.date && recentActivities.time) {
@@ -84,7 +86,7 @@ export default function NonStudent_dashboard({
           <div className="flex flex-col self-end">
             <p className="xs:text-md text-sm">Total Hours Completed</p>
             <p className="xs:text-sm text-xs">
-              {logtotals.total_hours} of {userInfo?.hours_required || 0}{" "}
+              {logtotals.total} of {userInfo?.hours_required || 0}{" "}
               required hours
             </p>
           </div>
@@ -92,14 +94,14 @@ export default function NonStudent_dashboard({
           <div className="text-end">
             <p className="xs:text-2xl text-lg font-semibold text-blue-600">
                 {(
-                  ((logtotals.total_hours || 0) /
+                  ((logtotals.total || 0) /
                     (userInfo?.hours_required || 0)) *
                   100
                 ).toFixed(2)}
                 %
             </p>
             <p className="xs:text-sm text-xs">
-              {(userInfo?.hours_required || 0) - (logtotals.total_hours || 0)}{" "}
+              {(userInfo?.hours_required || 0) - (logtotals.total || 0)}{" "}
               remaining
             </p>
           </div>
@@ -109,7 +111,7 @@ export default function NonStudent_dashboard({
             className="bg-black h-2 rounded-full"
             style={{
               width: `${(
-                ((logtotals.total_hours || 0) /
+                ((logtotals.total || 0) /
                   (userInfo?.hours_required || 0)) *
                 100
               ).toFixed(2)}%`,
@@ -154,7 +156,7 @@ export default function NonStudent_dashboard({
                   className="bg-black h-1 rounded-full"
                   style={{
                     width: `${(
-                      ((logtotals.total_hours || 0) /
+                      ((logtotals.total || 0) /
                         (userInfo?.hours_required || 0)) *
                       100
                     ).toFixed(2)}%`,
@@ -168,12 +170,12 @@ export default function NonStudent_dashboard({
             <span className="text-black text-sm">Hours This Week</span>
             <h1 className="flex items-end gap-1">
               <span className="text-2xl text-black">
-                {logtotals.total_hours || 0}
+                {logtotals.total || 0}
               </span>
               <span className="text-xs">/ 40</span>
             </h1>
             <span className="text-[10px]">
-              {(userInfo?.hours_required || 0) - (logtotals.total_hours || 0)}{" "}
+              {(userInfo?.hours_required || 0) - (logtotals.total || 0)}{" "}
               Hours remaining
             </span>
           </div>
@@ -238,7 +240,7 @@ export default function NonStudent_dashboard({
                 </span>
                 <div className="flex flex-col gap-1 text-[#787a7e]">
                   <h1 className=" text-md text-black">
-                    {logtotals.total_hours} hours completed
+                    {logtotals.total} hours completed
                   </h1>
                   <span className="text-xs -my-1 py-2">
                     You&apos;re making excellent progress!

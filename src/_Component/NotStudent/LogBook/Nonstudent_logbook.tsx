@@ -171,9 +171,9 @@ export default function NonStudent_LogBook() {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            username: session?.user.username,
             email_add: session?.user?.email,
             account_type: "non-student",
-            user_name: session?.user?.name,
             originalTitle: selectedLog?.title,
             updatedProgress: progress
           }),
@@ -188,9 +188,9 @@ export default function NonStudent_LogBook() {
       } else {
         // Add new log
         const requestBody = {
+          username: session?.user?.username,
           email_add: session?.user?.email,
           account_type: "non-student",
-          user_name: session?.user?.name,
           progress: progress,
         };
         
@@ -248,7 +248,7 @@ export default function NonStudent_LogBook() {
   return (
     <main className="text-black space-y-3.5">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="flex flex-col sm:text-2xl text-lg font-semibold">
+        <h1 className="flex flex-col sm:text-2xl text-lg font-semibold" onClick={() => console.log(progressData)}>
           OJT Logbook
           <span className="sm:text-sm text-xs font-light">
             Track your daily activities and weekly progress

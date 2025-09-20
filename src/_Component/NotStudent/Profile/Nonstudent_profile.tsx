@@ -63,19 +63,33 @@ export default function Nonstudent_Profile({
   };
 
   useEffect(() => {
-    if (session?.user?.id && session?.user?.email) {
-      // Only fetch if we don't have data or if it's been more than 5 minutes
-      if (!userInfo.id || !logtotals.total_hours) {
-        fetchUserData(session.user.id, session.user.email);
-      }
+    if (
+      session?.user?.id &&
+      session?.user?.email &&
+      (!userInfo.id || !logtotals.total)
+    ) {
+      fetchUserData(session.user.id, session.user.email);
     }
     const InitialNaming = () => {
-      const name = session?.user?.name?.trim();
-      const t = name?.split(" ");
-      setInitialName((t?.[0]?.[0] || "") + (t?.[1]?.[0] || ""));
+      const name = session?.user?.name?.trim() || "";
+      if (!name) {
+        setInitialName("");
+        return;
+      }
+      const parts = name.split(/\s+/).filter(Boolean);
+      const initials =
+        (parts[0]?.[0] || "") + (parts.length > 1 ? parts[1][0] : "");
+      setInitialName(initials.toUpperCase());
     };
     InitialNaming();
-  }, [session, fetchUserData, userInfo.id, logtotals.total_hours]);
+  }, [
+    session?.user?.id,
+    session?.user?.email,
+    session?.user?.name,
+    userInfo.id,
+    logtotals.total,
+    fetchUserData,
+  ]);
 
   if (isLoading) {
     return <Loading_Page />;
@@ -155,23 +169,20 @@ export default function Nonstudent_Profile({
               <div className="flex flex-col self-end">
                 <p className="xs:text-md text-sm">Total Hours Completed</p>
                 <p className="xs:text-sm text-xs">
-                  {logtotals.total_hours} of {userInfo?.hours_required} required
-                  hours
+                  {logtotals.total} of {userInfo?.hours_required} required hours
                 </p>
               </div>
               {/* Progress in percentage */}
               <div className="text-end">
                 <p className="xs:text-2xl text-lg font-semibold text-blue-600">
                   {(
-                    ((logtotals.total_hours || 0) /
-                      (userInfo?.hours_required || 0)) *
+                    ((logtotals.total || 0) / (userInfo?.hours_required || 0)) *
                     100
                   ).toFixed(2)}
                   %
                 </p>
                 <p className="xs:text-sm text-xs">
-                  {(userInfo?.hours_required || 0) -
-                    (logtotals.total_hours || 0)}{" "}
+                  {(userInfo?.hours_required || 0) - (logtotals.total || 0)}{" "}
                   hours remaining
                 </p>
               </div>
@@ -181,8 +192,7 @@ export default function Nonstudent_Profile({
                 className="bg-black h-4 rounded-full"
                 style={{
                   width: `${(
-                    ((logtotals.total_hours || 0) /
-                      (userInfo?.hours_required || 0)) *
+                    ((logtotals.total || 0) / (userInfo?.hours_required || 0)) *
                     100
                   ).toFixed(2)}%`,
                 }}
@@ -190,9 +200,7 @@ export default function Nonstudent_Profile({
             </div>
             <div className="w-full flex sm:flex-row  flex-col items-center gap-3 mt-2">
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">
-                {((userInfo?.hours_required || 0) -
-                  (logtotals.total_hours || 0)) /
-                  8}{" "}
+                {((userInfo?.hours_required || 0) - (logtotals.total || 0)) / 8}{" "}
                 <span className="text-sm font-extralight">Days Left</span>
               </h1>
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">

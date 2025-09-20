@@ -10,35 +10,10 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const email = searchParams.get("email");
-    const checkUser = await client.query(
-      "SELECT progress FROM log_book WHERE email_add = $1",
-      [email]
-    );
-
-    if (checkUser.rows.length === 0 || !checkUser.rows[0].progress) {
-      return new Response(
-        JSON.stringify({
-          total_hours: 0,
-          total_logs: 0,
-        }),
-        { status: 200 }
-      );
-    }
-
-    const totalHours = await client.query(
-      "SELECT COALESCE(SUM((elem->>'hours_worked')::int), 0) as total_hours FROM log_book, jsonb_array_elements(progress) as elem WHERE email_add = $1",
-      [email]
-    );
-    const totalLogs = await client.query(
-      "SELECT COALESCE(jsonb_array_length(progress), 0) as total_logs FROM log_book WHERE email_add = $1",
-      [email]
-    );
-
+    const getTotal = await client.query("SELECT SUM(hours_worked) as total, COUNT(*) as total_logs FROM log_book WHERE email_add = $1",[email]);
+    console.log(getTotal.rows)
     return new Response(
-      JSON.stringify({
-        total_hours: totalHours.rows[0].total_hours,
-        total_logs: totalLogs.rows[0].total_logs,
-      }),
+      JSON.stringify({total: getTotal.rows[0].total, total_logs: getTotal.rows[0].total_logs}),
       { status: 200 }
     );
   } catch (error) {

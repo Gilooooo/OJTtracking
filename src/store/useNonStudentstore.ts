@@ -7,7 +7,7 @@ interface UserInfo {
 }
 
 interface LogTotals {
-  total_hours?: number;
+  total?: number;
   total_logs?: number;
 }
 
@@ -45,7 +45,6 @@ interface NonStudentStore {
   
   // Actions
   fetchUserData: (userId: string, email: string) => Promise<void>;
-  fetchLogTotals: (email: string) => Promise<void>;
   fetchProgressData: (email: string) => Promise<void>;
   refreshAfterLogChange: (email: string) => Promise<void>;
   setLoading: (loading: boolean) => void;
@@ -68,15 +67,13 @@ export const useNonStudentStore = create<NonStudentStore>((set, get) => ({
         fetch(`/api/request/LogBookRequest/log_totals?email=${email}`),
         fetch(`/api/request/LogBookRequest/logbook_dashboard?email=${email}`)
       ]);
-
       const userText = await userResponse.text();
       const totalsText = await totalsResponse.text();
       const recentText = await recentResponse.text();
-
       const userData = userText ? JSON.parse(userText) : {};
-      const totalsData = totalsText ? JSON.parse(totalsText) : { total_hours: 0, total_logs: 0 };
+      const totalsData = totalsText ? JSON.parse(totalsText) : { total:0 , total_log:0};
       const recentData = recentText ? JSON.parse(recentText) : {};
-
+      console.log(userData, totalsData, recentData, totalsResponse)
       set({
         userInfo: userData,
         logTotals: totalsData,
@@ -89,36 +86,23 @@ export const useNonStudentStore = create<NonStudentStore>((set, get) => ({
     }
   },
 
-  fetchLogTotals: async (email: string) => {
-    try {
-      const response = await fetch(`/api/request/LogBookRequest/log_totals?email=${email}`);
-      const text = await response.text();
-      const data = text ? JSON.parse(text) : { total_hours: 0, total_logs: 0 };
-      set({ logTotals: data });
-    } catch (error) {
-      console.error('Error fetching log totals:', error);
-    }
-  },
-
   fetchProgressData: async (email: string) => {
     try {
+      set({ isLoading: true })
       const response = await fetch(`/api/request/LogBookRequest/log_book_request?email_add=${email}`);
       const text = await response.text();
-      
       if (!text || !response.ok) {
         set({ progressData: [] });
         return;
       }
-      
       // Check if response is HTML (error page) instead of JSON
       if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
         console.error('API returned HTML instead of JSON - likely a 404 or server error');
         set({ progressData: [] });
         return;
       }
-      
       const data = JSON.parse(text);
-      set({ progressData: data.progress || [] });
+      set({ progressData: data.progress || [], isLoading:false });
     } catch (error) {
       console.error('Error fetching progress data:', error);
       set({ progressData: [] });
@@ -126,9 +110,8 @@ export const useNonStudentStore = create<NonStudentStore>((set, get) => ({
   },
 
   refreshAfterLogChange: async (email: string) => {
-    const { fetchLogTotals, fetchProgressData } = get();
+    const { fetchProgressData } = get();
     await Promise.all([
-      fetchLogTotals(email),
       fetchProgressData(email)
     ]);
   },
