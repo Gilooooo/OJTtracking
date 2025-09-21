@@ -58,7 +58,7 @@ export default function Nonstudent_Profile({
         }, 3000);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -118,7 +118,6 @@ export default function Nonstudent_Profile({
             {/* Profile Picture */}
             <div
               className="h-20 w-20 rounded-full bg-amber-400 flex items-center justify-center"
-              onClick={() => console.log(session?.user?.username)}
             >
               {initialName}
             </div>
@@ -200,7 +199,7 @@ export default function Nonstudent_Profile({
             </div>
             <div className="w-full flex sm:flex-row  flex-col items-center gap-3 mt-2">
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">
-                {((userInfo?.hours_required || 0) - (logtotals.total || 0)) / 8}{" "}
+                {Math.ceil((userInfo?.hours_required || 0) - (logtotals.total || 0)) / 8}{" "}
                 <span className="text-sm font-extralight">Days Left</span>
               </h1>
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">

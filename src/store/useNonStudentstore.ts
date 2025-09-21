@@ -73,7 +73,6 @@ export const useNonStudentStore = create<NonStudentStore>((set, get) => ({
       const userData = userText ? JSON.parse(userText) : {};
       const totalsData = totalsText ? JSON.parse(totalsText) : { total:0 , total_log:0};
       const recentData = recentText ? JSON.parse(recentText) : {};
-      console.log(userData, totalsData, recentData, totalsResponse)
       set({
         userInfo: userData,
         logTotals: totalsData,

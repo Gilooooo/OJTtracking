@@ -51,7 +51,6 @@ export default function NonStudent_LogBook() {
   const [tasks, setTasks] = useState<string[]>([]);
   const [currentTask, setCurrentTask] = useState<string>("");
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [totalHours, setTotalHours] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filteredData, setFilteredData] = useState<ProgressData[]>([]);
   const [formData, setFormData] = useState<FormData>({
@@ -231,13 +230,7 @@ export default function NonStudent_LogBook() {
     }
   }, [session?.user?.email, progressData.length, fetchProgressData]);
 
-  // Calculate total hours worked
   useEffect(() => {
-    setTotalHours(
-      progressData
-        .map((log) => log.hours_worked)
-        .reduce((curr, sec) => curr + sec, 0)
-    );
     setFilteredData(progressData);
   }, [progressData]);
 
@@ -248,7 +241,7 @@ export default function NonStudent_LogBook() {
   return (
     <main className="text-black space-y-3.5">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="flex flex-col sm:text-2xl text-lg font-semibold" onClick={() => console.log(progressData)}>
+        <h1 className="flex flex-col sm:text-2xl text-lg font-semibold">
           OJT Logbook
           <span className="sm:text-sm text-xs font-light">
             Track your daily activities and weekly progress
@@ -269,9 +262,6 @@ export default function NonStudent_LogBook() {
         <div className="flex-1/3 p-3 py-4 shadow-lg rounded-2xl self-stretch flex items-center gap-4">
           <span
             className="p-2 rounded-lg bg-[#dbeafe] text-[#3a77fc]"
-            onClick={() => {
-              console.log(totalHours);
-            }}
           >
             <FileText size={18} />
           </span>

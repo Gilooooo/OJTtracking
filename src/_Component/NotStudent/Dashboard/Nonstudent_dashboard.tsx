@@ -72,7 +72,6 @@ useEffect(() => {
         <h1 className="flex text-lg font-extralight items-center gap-2">
           <span
             className="p-2 bg-[#dff2fe] rounded-xl text-[#0084d1]"
-            onClick={() => console.log(logtotals)}
           >
             <TrendingUp size={18} />
           </span>
