@@ -1,4 +1,13 @@
-import { Bell, BookOpen, HomeIcon, LogOut, Menu, User2, Users2, X } from "lucide-react";
+import {
+  Bell,
+  BookOpen,
+  HomeIcon,
+  LogOut,
+  Menu,
+  User2,
+  Users2,
+  X,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
@@ -19,7 +28,6 @@ export default function MobileNavBar({
   handleLogout,
   setIsComponentLoading,
 }: MobileNavBarProps) {
-
   const handleSectionChange = (section: string) => {
     setIsMenuOpen(false);
     if (setIsComponentLoading) {
@@ -110,9 +118,7 @@ export default function MobileNavBar({
                   <User2 size={14} />
                   <span className="text-sm">Profile</span>
                 </li>
-                {session?.user.role === "non-student" ? (
-                  ""
-                ) : (
+                {session?.user.role === "supervisor" && (
                   <>
                     <li
                       className={`w-full rounded-lg py-2 px-3 text-black flex items-center gap-2 cursor-pointer ${
@@ -125,7 +131,10 @@ export default function MobileNavBar({
                       <Users2 size={14} />
                       <span className="text-sm">Room</span>
                     </li>
-
+                  </>
+                )}
+                {session?.user.role !== "non-student" && (
+                  <>
                     <li
                       className={`w-full rounded-lg py-2 px-3 text-black flex items-center gap-2 cursor-pointer ${
                         activeSection === "notifications"

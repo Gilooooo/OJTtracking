@@ -27,7 +27,6 @@ export default function NavBar({
   handleLogout,
   setIsComponentLoading,
 }: NavBarProps) {
-
   const handleSectionChange = (section: string) => {
     if (setIsComponentLoading) {
       setIsComponentLoading(true);
@@ -158,9 +157,7 @@ export default function NavBar({
               <User2 size={14} />
               <span className="text-sm">Profile</span>
             </li>
-            {session?.user.role === "non-student" ? (
-              ""
-            ) : (
+            {session?.user.role === "supervisor" && (
               <>
                 <li
                   className={`w-full rounded-lg py-2 px-3 text-black flex items-center gap-2 cursor-pointer ${
@@ -173,6 +170,10 @@ export default function NavBar({
                   <Users2 size={14} />
                   <span className="text-sm">Room</span>
                 </li>
+              </>
+            )}
+            {session?.user.role !== "non-student" && (
+              <>
                 <li
                   className={`w-full rounded-lg py-2 px-3 text-black flex items-center gap-2 cursor-pointer ${
                     activeSection === "notifications"

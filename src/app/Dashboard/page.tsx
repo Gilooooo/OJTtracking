@@ -9,7 +9,6 @@ import Student_Dashboard from "@/_Component/Student/Dashboard/Student_dashboard"
 import Student_LogBook from "@/_Component/Student/Logs/Student_logbook";
 import Notification from "@/_Component/Student/Notifications/notification";
 import Student_Profile from "@/_Component/Student/Profile/Student_Profile";
-import Student_Room from "@/_Component/Student/Room/Student_room";
 import Supervisor_Dashboard from "@/_Component/Supervisor/Dashboard/Supervisor_dashboard";
 import Supervisor_Profile from "@/_Component/Supervisor/Profile/Supervisor_profile";
 import Supervisor_Room from "@/_Component/Supervisor/Room/Supervisor_room";
@@ -28,8 +27,6 @@ export default function Dashboard() {
     if (status === "loading") return;
     if (!session) {
       router.push("/Login");
-    } else {
-      console.log("Session data:", session);
     }
   }, [session, status, router]);
 
@@ -81,12 +78,7 @@ export default function Dashboard() {
       case "notifications":
         return <Notification />;
       case "room":
-        if (role === "student") {
-          return <Student_Room />;
-        } else if (role === "supervisor") {
-          return <Supervisor_Room />;
-        }
-        break;
+        return <Supervisor_Room />;
       default:
         if (role === "supervisor") {
           return <Supervisor_Dashboard />;

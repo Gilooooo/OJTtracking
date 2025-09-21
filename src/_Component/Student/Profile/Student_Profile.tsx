@@ -2,6 +2,7 @@ import Loading_Page from "@/_Component/Loading/Loading";
 import { useStudentStore } from "@/store/useStudentStore";
 import {
   Award,
+  Building,
   ChevronDown,
   ChevronUp,
   // Building,
@@ -32,7 +33,7 @@ export default function Student_Profile() {
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [dropdown, setDropdown] = useState<boolean>(false);
-  const { userInfo, fetchUserData, isLoading } = useStudentStore();
+  const { userInfo, enrolledDate, fetchUserData, rooms, isLoading, fetchEnrolledRooms } = useStudentStore();
 
   const progressPercentage = useMemo(
     () => ((40 / (userInfo.hours_required || 1)) * 100).toFixed(2),
@@ -52,8 +53,19 @@ export default function Student_Profile() {
   }, [session]);
 
   useEffect(() => {
-    if (session?.user.id) {
+    if (session?.user?.id) {
       fetchUserData(session.user.id);
+    }
+  }, [session?.user?.id, fetchUserData]);
+
+  useEffect(() => {
+    if (userInfo.student_id && session?.user?.name) {
+      fetchEnrolledRooms(userInfo.student_id.trim(), session.user.name);
+    }
+  }, [userInfo.student_id, session?.user?.name, fetchEnrolledRooms]);
+
+  useEffect(() => {
+    if (userInfo.student_id) {
       setStudentInfo({
         student_id: userInfo.student_id,
         course: userInfo.course || "",
@@ -62,15 +74,7 @@ export default function Student_Profile() {
         hours_required: userInfo.hours_required || 0,
       });
     }
-  }, [
-    session?.user.id,
-    fetchUserData,
-    userInfo.student_id,
-    userInfo.course,
-    userInfo.school,
-    userInfo.year_level,
-    userInfo.hours_required,
-  ]);
+  }, [userInfo]);
 
   if (isLoading) {
     return <Loading_Page />;
@@ -256,41 +260,40 @@ export default function Student_Profile() {
               </h1>
             </div>
           </div>
-          {/* <div className="flex flex-col items-center p-5 px-6 bg-white shadow-lg rounded-2xl gap-1">
+          {rooms.length > 0 && (<div className="flex flex-col items-center p-5 px-6 bg-white shadow-lg rounded-2xl gap-1">
             <h1 className="flex items-center gap-2 w-full text-lg">
               <Building size={18} className="text-[#3a77fc]" /> Company
               Information
             </h1>
             <div className="w-full pt-4 grid xs:grid-cols-2 gap-4">
               <div>
-                <span className="text-xs text-gray-400">Course</span>
+                <span className="text-xs text-gray-400">Company</span>
                 <h1 className="text-black font-semibold text-sm">
-                  Tech Company
+                  {rooms[0]?.company || "N/A"}
                 </h1>
-                <p className="text-xs text-gray-500">Makati City</p>
+                <p className="text-xs text-gray-500">{rooms[0]?.company_location || "N/A"}</p>
               </div>
               <div>
                 <span className="text-xs text-gray-400">Supervisor</span>
-                <h1 className="text-black font-semibold text-sm">Iron Man</h1>
-                <p className="text-xs text-gray-500">iron.man@gmail.com</p>
-                <p className="text-xs text-gray-500">+63 999999999</p>
+                <h1 className="text-black font-semibold text-sm">{rooms[0]?.supervisor_name || "N/A"}</h1>
+                <p className="text-xs text-gray-500">{rooms[0]?.supervisor_email || "N/A"}</p>
               </div>
-              {/* Date Start 
+              {/*  Date Start  */}
               <div>
-                <span className="text-xs text-gray-400">Start Date</span>
+                <span className="text-xs text-gray-400" onClick={() => console.log(enrolledDate)}>Start Date</span>
                 <h1 className="text-black font-semibold text-sm">
-                  January 15, 2025
+                  {enrolledDate?.start_date ? new Date(enrolledDate.start_date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "N/A"}
                 </h1>
               </div>
-              {/* Date End 
+              {/* Date End  */}
               <div>
                 <span className="text-xs text-gray-400">End Date</span>
                 <h1 className="text-black font-semibold text-sm">
-                  December 15, 2025
+                  {enrolledDate?.end_date ? new Date(enrolledDate.end_date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "N/A"}
                 </h1>
               </div>
             </div>
-          </div> */}
+          </div>)}
         </div>
       </div>
 

@@ -20,9 +20,15 @@ interface Room{
     supervisor_name: string;
 }
 
+interface EnrolledDate{
+    start_date?: string;
+    end_date?: string;
+}
+
 interface StudentStore {
-    userInfo: UserInfo
+    userInfo: UserInfo;
     rooms: Room[];
+    enrolledDate: EnrolledDate;
     isLoading: boolean;
     fetchUserData: (userId: string) => Promise<void>;
     setLoading: (loading: boolean) => void;
@@ -32,6 +38,7 @@ interface StudentStore {
 export const useStudentStore = create<StudentStore>((set) => ({
     userInfo: {},
     rooms: [],
+    enrolledDate: {}, 
     isLoading: false,
 
     fetchUserData: async (userId: string) => {
@@ -54,8 +61,8 @@ export const useStudentStore = create<StudentStore>((set) => ({
             set({ isLoading: true });
             const response = await fetch(`/api/request/Room/Enrolled?student_id=${studentid}&user_name=${username}`);
             const data = await response.json();
-            console.log('API Response:', data);
-            set({ rooms: data.rooms || [], isLoading: false });
+            set({ enrolledDate: { start_date: data.startdate, end_date: data.enddate }, rooms: data.rooms || [], isLoading: false });
+            console.log(data.start_date);
         } catch (error) {
             console.error('Error fetching user data:', error);
             set({ rooms: [], isLoading: false });
