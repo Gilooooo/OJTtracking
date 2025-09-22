@@ -34,28 +34,38 @@ interface FormData {
 }
 
 interface ProgressData {
-  title: string;
-  date: string;
-  time: string;
-  hours_worked: number;
-  entry_type: string;
-  description: string;
-  tasks_completed: string[];
-  attachments: FileAttachment[];
+  title?: string;
+  date?: string;
+  time?: string;
+  hours_worked?: number;
+  entry_type?: string;
+  description?: string;
+  tasks_completed?: string[];
+  status?: string;
+  attachments?: FileAttachment[];
 }
 
 export default function Student_LogBook() {
   const { data: session } = useSession();
-  const { userInfo, rooms, isLoading, fetchUserData, fetchEnrolledRooms } = useStudentStore();
+  const {
+    userInfo,
+    rooms,
+    isLoading,
+    progressData,
+    fetchEnrolledRooms,
+    fetchProgressData,
+  } = useStudentStore();
   const [modalAppear, setModalAppear] = useState<boolean>(false);
   const [roomCode, setRoomCode] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
   const [showLogbook, setShowLogbook] = useState<boolean>(false);
   const [isLogModalOpen, setIsLogModalOpen] = useState<boolean>(false);
-  const [progressData, setProgressData] = useState<ProgressData[]>([]);
   const [tasks, setTasks] = useState<string[]>([]);
   const [currentTask, setCurrentTask] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [filteredData, setFilteredData] = useState<ProgressData[]>([]);
   const [formData, setFormData] = useState<FormData>({
     date: "",
     hours_worked: "",
@@ -71,14 +81,13 @@ export default function Student_LogBook() {
     setRoomCode("");
   };
 
-    const downloadFile = (file: FileAttachment) => {
+  const downloadFile = (file: FileAttachment) => {
     const link = document.createElement("a");
     link.href = file.data;
     link.download = file.name;
     link.click();
   };
 
-  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
@@ -108,7 +117,10 @@ export default function Student_LogBook() {
       if (response.ok) {
         setModalAppear(false);
         setShowSuccess(true);
-        fetchEnrolledRooms(userInfo?.student_id?.trim() || "", session?.user.name || "");
+        fetchEnrolledRooms(
+          userInfo?.student_id?.trim() || "",
+          session?.user.name || ""
+        );
       } else {
         setErrorMessage("Room");
       }
@@ -121,7 +133,10 @@ export default function Student_LogBook() {
     e.preventDefault();
     const progress = {
       date: formData.date,
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       hours_worked: parseInt(formData.hours_worked),
       entry_type: formData.entry_type,
       title: formData.title,
@@ -146,42 +161,58 @@ export default function Student_LogBook() {
 
       if (response.ok) {
         setIsLogModalOpen(false);
-        setFormData({ date: "", hours_worked: "", entry_type: "daily", title: "", description: "", attachments: [] });
+        setFormData({
+          date: "",
+          hours_worked: "",
+          entry_type: "daily",
+          title: "",
+          description: "",
+          attachments: [],
+        });
         setTasks([]);
-        fetchProgressData();
+        fetchProgressData(session?.user.email || "");
       }
     } catch (error) {
       console.error("Error saving log:", error);
     }
   };
 
-  const fetchProgressData = async () => {
-    try {
-      const response = await fetch(`/api/request/LogBookRequest/log_book_request?email_add=${session?.user?.email}`);
-      const data = await response.json();
-      setProgressData(data.progress || []);
-    } catch (error) {
-      console.error("Error fetching progress data:", error);
+  const filterLogs = (
+    searchValue: string,
+    statusValue: string = statusFilter
+  ) => {
+    setSearchTerm(searchValue);
+
+    let filtered = progressData;
+
+    if (searchValue.trim()) {
+      filtered = filtered.filter(
+        (log) =>
+          log.title?.toLowerCase().includes(searchValue.toLowerCase()) ||
+          log.description?.toLowerCase().includes(searchValue.toLowerCase())
+      );
     }
+
+    if (statusValue !== "all") {
+      filtered = filtered.filter((log) => log.status === statusValue);
+    }
+    setFilteredData(filtered);
+  };
+
+  const handleStatusFilter = (status: string) => {
+    setStatusFilter(status);
+    filterLogs(searchTerm, status);
   };
 
   useEffect(() => {
-    if (session?.user?.id) {
-      fetchUserData(session.user.id);
-    }
-  }, [session?.user?.id, fetchUserData]);
-
-  useEffect(() => {
-    if (userInfo.student_id && session?.user.name) {
-      fetchEnrolledRooms(userInfo.student_id.trim(), session.user.name);
-    }
-  }, [userInfo.student_id, session?.user.name, fetchEnrolledRooms]);
-
-  useEffect(() => {
     if (showLogbook && session?.user?.email) {
-      fetchProgressData();
+      fetchProgressData(session.user.email);
     }
-  }, [showLogbook, session?.user?.email]);
+  }, [showLogbook, session?.user?.email, fetchProgressData]);
+
+  useEffect(() => {
+    setFilteredData(progressData);
+  }, [progressData]);
 
   if (isLoading) {
     return <Loading_Page />;
@@ -193,121 +224,151 @@ export default function Student_LogBook() {
       <main className="text-black space-y-3.5">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <button 
+            <button
               onClick={() => setShowLogbook(false)}
               className="text-blue-500 text-sm mb-2 hover:underline"
             >
               ← Back to Room
             </button>
-            <h1 className="flex flex-col sm:text-2xl text-lg font-semibold">
+            <h1
+              className="flex flex-col sm:text-2xl text-lg font-semibold"
+              onClick={() => console.log(progressData)}
+            >
               OJT Logbook
               <span className="sm:text-sm text-xs font-light">
                 Track your daily activities and weekly progress
               </span>
             </h1>
           </div>
-          <button 
+          <button
             onClick={() => setIsLogModalOpen(true)}
             className="flex items-center gap-2 xs:py-2 xs:px-3 p-2 bg-blue-500 rounded-lg text-white xs:text-sm text-[10px]"
           >
             <Plus size={12} /> Add New Log
           </button>
         </div>
-      <div className="flex sm:flex-row flex-col items-center gap-3">
-        {/* Total Logs */}
-        <div className="flex-1/3 p-3 py-4 shadow-lg rounded-2xl self-stretch flex items-center gap-4">
-          <span className="p-2 rounded-lg bg-[#dbeafe] text-[#3a77fc]">
-            <FileText size={18} />
-          </span>
-          <h1 className="flex flex-col text-2xl font-bold">
-            <span className="text-sm text-gray-500 font-light" onClick={() => console.log(progressData)}>Total Logs</span>
-            4
-          </h1>
-        </div>
-        {/* Total Approved */}
-        <div className="flex-1/3 p-3 py-4 shadow-lg rounded-2xl self-stretch flex items-center gap-4">
-          <span className="p-2 rounded-lg bg-[#dbfce7] text-[#2ab65e]">
-            <CheckCircle size={18} />
-          </span>
-          <h1 className="flex flex-col text-2xl font-bold">
-            <span className="text-sm text-gray-500 font-light">Approved</span>3
-          </h1>
-        </div>
-        {/* Total pending */}
-        <div className="flex-1/3 p-3 py-4 shadow-lg rounded-2xl self-stretch flex items-center gap-4 ">
-          <span className="p-2 rounded-lg bg-[#fef9c2] text-[#e2b44d]">
-            <Clock size={18} />
-          </span>
-          <h1 className="flex flex-col text-2xl font-bold">
-            <span className="text-sm text-gray-500 font-light">Pending</span>1
-          </h1>
-        </div>
-      </div>
-      {/* Search Log */}
-      <div className="flex sm:flex-row flex-col items-center py-6 px-4 shadow-lg rounded-2xl gap-3 bg-white">
-        <div className="py-2 px-3 bg-[#f3f3f5] flex items-center rounded-2xl sm:flex-3/4 gap-3 h-10 self-stretch">
-          <Search size={18} />
-          <input
-            type="text"
-            placeholder="Search logs by title or description...."
-            className="flex-1 bg-transparent focus:outline-none text-sm"
-          />
-        </div>
-        <div className="flex items-center relative bg-[#f3f3f5] rounded-2xl py-2 px-3 sm:flex-1/4 h-10 self-stretch">
-          <select className="text-sm focus:outline-none appearance-none pr-8 bg-transparent w-full">
-            <option value="all">All Status</option>
-            <option value="approved">Approved</option>
-            <option value="pending">Pending</option>
-            <option value="rejected">Rejected</option>
-          </select>
-          <span className="absolute right-2">
-            <ChevronDown size={18} />
-          </span>
-        </div>
-      </div>
-       {/* Log list */}
-      {progressData.map((log, index) => (
-        <div key={index} className="p-4 py-5 bg-white shadow-lg rounded-2xl space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="text-xs flex gap-2 items-center sm:flex-row flex-col">
-              <div className="flex items-center gap-3">
-                <p className="bg-[#fef9c2] text-[#e2b44d] px-2 p-1 rounded-2xl flex gap-2 items-center">
-                  <Clock size={12} /> Pending
-                </p>
-                <p className="bg-white text-black border border-gray-300 px-2 p-1 rounded-2xl">
-                  {log.entry_type.charAt(0).toUpperCase() + log.entry_type.slice(1)}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-gray-400 flex items-center gap-1">
-                  <Calendar size={12} />
-                  {log.date}
-                </span>
-                <span className="text-gray-400 flex items-center gap-1">
-                  <Clock size={12} />
-                  {log.time}
-                </span>
-              </div>
-            </div>
-            <div className="flex gap-3 items-center">
-              <Eye size={18} />
-              <Edit size={18} />
-              <Trash2 size={18} className="text-red-500" />
-            </div>
+        <div className="flex sm:flex-row flex-col items-center gap-3">
+          {/* Total Logs */}
+          <div className="flex-1/3 p-3 py-4 shadow-lg rounded-2xl self-stretch flex items-center gap-4">
+            <span className="p-2 rounded-lg bg-[#dbeafe] text-[#3a77fc]">
+              <FileText size={18} />
+            </span>
+            <h1 className="flex flex-col text-2xl font-bold">
+              <span className="text-sm text-gray-500 font-light">
+                Total Logs
+              </span>
+              {progressData.length}
+            </h1>
           </div>
-          <div className="flex flex-col gap-3">
-            <h1 className="text-xl">{log.title}</h1>
-            <p className="text-xs text-gray-700">{log.description}</p>
-            <h4 className="text-xs">Task Completed:</h4>
-            <div className="flex flex-col py-4 px-2 bg-[#f8fafc] shadow-lg rounded-md gap-1">
-              {log.tasks_completed.map((task, idx) => (
-                <span key={idx} className="flex items-center text-xs text-gray-500 gap-3">
-                  <CheckCircle size={12} className="text-[#2ab65e]" /> {task}
-                </span>
-              ))}
-            </div>
+          {/* Total Approved */}
+          <div className="flex-1/3 p-3 py-4 shadow-lg rounded-2xl self-stretch flex items-center gap-4">
+            <span className="p-2 rounded-lg bg-[#dbfce7] text-[#2ab65e]">
+              <CheckCircle size={18} />
+            </span>
+            <h1 className="flex flex-col text-2xl font-bold">
+              <span className="text-sm text-gray-500 font-light">Approved</span>
+              {progressData.reduce(
+                (count, log) => (log.status === "approved" ? count + 1 : count),
+                0
+              )}
+            </h1>
           </div>
-          {log?.attachments?.length > 0 && (
+          {/* Total pending */}
+          <div className="flex-1/3 p-3 py-4 shadow-lg rounded-2xl self-stretch flex items-center gap-4 ">
+            <span className="p-2 rounded-lg bg-[#fef9c2] text-[#e2b44d]">
+              <Clock size={18} />
+            </span>
+            <h1 className="flex flex-col text-2xl font-bold">
+              <span className="text-sm text-gray-500 font-light">Pending</span>
+              {progressData.reduce(
+                (count, log) => (log.status === "pending" ? count + 1 : count),
+                0
+              )}
+            </h1>
+          </div>
+        </div>
+        {/* Search Log */}
+        <div className="flex sm:flex-row flex-col items-center py-6 px-4 shadow-lg rounded-2xl gap-3 bg-white">
+          <div className="py-2 px-3 bg-[#f3f3f5] flex items-center rounded-2xl sm:flex-3/4 gap-3 h-10 self-stretch">
+            <Search size={18} />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => filterLogs(e.target.value)}
+              placeholder="Search logs by title or description...."
+              className="flex-1 bg-transparent focus:outline-none text-sm"
+            />
+          </div>
+          <div className="flex items-center relative bg-[#f3f3f5] rounded-2xl py-2 px-3 sm:flex-1/4 h-10 self-stretch">
+            <select
+              value={statusFilter}
+              onChange={(e) => handleStatusFilter(e.target.value)}
+              className="text-sm focus:outline-none appearance-none pr-8 bg-transparent w-full"
+            >
+              <option value="all">All Status</option>
+              <option value="approved">Approved</option>
+              <option value="pending">Pending</option>
+            </select>
+            <span className="absolute right-2">
+              <ChevronDown size={18} />
+            </span>
+          </div>
+        </div>
+        {/* Log list */}
+        {filteredData.map((log, index) => (
+          <div
+            key={index}
+            className="p-4 py-5 bg-white shadow-lg rounded-2xl space-y-2"
+          >
+            <div className="flex items-center justify-between">
+              <div className="text-xs flex gap-2 items-center sm:flex-row flex-col">
+                <div className="flex items-center gap-3">
+                  <p className="bg-[#fef9c2] text-[#e2b44d] px-2 p-1 rounded-2xl flex gap-2 items-center">
+                    <Clock size={12} />{" "}
+                    {log.status
+                      ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                      : "No Status"}
+                  </p>
+                  <p className="bg-white text-black border border-gray-300 px-2 p-1 rounded-2xl">
+                    {log.entry_type
+                      ? log.entry_type.charAt(0).toUpperCase() +
+                        log.entry_type.slice(1)
+                      : "No Entry Type"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-gray-400 flex items-center gap-1">
+                    <Calendar size={12} />
+                    {log.date}
+                  </span>
+                  <span className="text-gray-400 flex items-center gap-1">
+                    <Clock size={12} />
+                    {log.time}
+                  </span>
+                </div>
+              </div>
+              <div className="flex gap-3 items-center">
+                <Eye size={18} />
+                <Edit size={18} />
+                <Trash2 size={18} className="text-red-500" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-3">
+              <h1 className="text-xl">{log.title}</h1>
+              <p className="text-xs text-gray-700">{log.description}</p>
+              <h4 className="text-xs">Task Completed:</h4>
+              <div className="flex flex-col py-4 px-2 bg-[#f8fafc] shadow-lg rounded-md gap-1">
+                {log.tasks_completed?.map((task, idx) => (
+                  <span
+                    key={idx}
+                    className="flex items-center text-xs text-gray-500 gap-3"
+                  >
+                    <CheckCircle size={12} className="text-[#2ab65e]" /> {task}
+                  </span>
+                ))}
+              </div>
+            </div>
+            {log?.attachments?.length && (
               <>
                 <h4 className="text-xs">Attachments:</h4>
                 <div className="flex flex-wrap gap-2">
@@ -323,20 +384,20 @@ export default function Student_LogBook() {
                 </div>
               </>
             )}
-        </div>
-      ))}
-      <LogbookModal
-        isOpen={isLogModalOpen}
-        isEditing={false}
-        formData={formData}
-        tasks={tasks}
-        currentTask={currentTask}
-        onClose={() => setIsLogModalOpen(false)}
-        onSubmit={handleLogSubmit}
-        onFormDataChange={setFormData}
-        onTasksChange={setTasks}
-        onCurrentTaskChange={setCurrentTask}
-      />
+          </div>
+        ))}
+        <LogbookModal
+          isOpen={isLogModalOpen}
+          isEditing={false}
+          formData={formData}
+          tasks={tasks}
+          currentTask={currentTask}
+          onClose={() => setIsLogModalOpen(false)}
+          onSubmit={handleLogSubmit}
+          onFormDataChange={setFormData}
+          onTasksChange={setTasks}
+          onCurrentTaskChange={setCurrentTask}
+        />
       </main>
     );
   }
@@ -418,7 +479,7 @@ export default function Student_LogBook() {
       {rooms.length > 0 && rooms[0] && (
         <section className="mt-6">
           <h3 className="text-lg font-semibold mb-4">My OJT Room</h3>
-          <div 
+          <div
             className="bg-white rounded-lg shadow-lg p-6 border cursor-pointer hover:shadow-xl transition-shadow"
             onClick={() => setShowLogbook(true)}
           >
@@ -474,7 +535,7 @@ export default function Student_LogBook() {
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-4 text-center text-sm text-blue-600">
               Click to view logbook →
             </div>

@@ -5,12 +5,10 @@ import {
   Building,
   ChevronDown,
   ChevronUp,
-  // Building,
   Clock,
   Edit,
   GraduationCap,
   Mail,
-  MapPin,
   Phone,
   Star,
   TrendingUp,
@@ -19,28 +17,33 @@ import {
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 
-interface StudentInfo {
-  student_id?: string | undefined;
-  course: string;
-  school: string;
-  year_level: string;
-  hours_required: number;
-}
-
 export default function Student_Profile() {
   const { data: session } = useSession();
   const [initialName, setInitialName] = useState<string>("");
-  const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [dropdown, setDropdown] = useState<boolean>(false);
-  const { userInfo, enrolledDate, fetchUserData, rooms, isLoading, fetchEnrolledRooms } = useStudentStore();
+  const {
+    userInfo,
+    enrolledDate,
+    progressData,
+    logTotals,
+    rooms,
+    isLoading,
+    fetchEnrolledRooms,
+  } = useStudentStore();
 
   const progressPercentage = useMemo(
-    () => ((40 / (userInfo.hours_required || 1)) * 100).toFixed(2),
-    [userInfo.hours_required]
+    () =>
+      (((logTotals.total || 0) / (userInfo.hours_required || 1)) * 100).toFixed(
+        2
+      ),
+    [userInfo.hours_required, logTotals.total]
   );
 
-  const progressRemaining = useMemo(() => (((userInfo.hours_required || 0) - 40)), [userInfo.hours_required])
+  const progressRemaining = useMemo(
+    () => (userInfo.hours_required || 0) - (logTotals.total || 0),
+    [userInfo.hours_required, logTotals.total]
+  );
 
   useEffect(() => {
     // Initial Name Function
@@ -53,28 +56,10 @@ export default function Student_Profile() {
   }, [session]);
 
   useEffect(() => {
-    if (session?.user?.id) {
-      fetchUserData(session.user.id);
-    }
-  }, [session?.user?.id, fetchUserData]);
-
-  useEffect(() => {
     if (userInfo.student_id && session?.user?.name) {
       fetchEnrolledRooms(userInfo.student_id.trim(), session.user.name);
     }
   }, [userInfo.student_id, session?.user?.name, fetchEnrolledRooms]);
-
-  useEffect(() => {
-    if (userInfo.student_id) {
-      setStudentInfo({
-        student_id: userInfo.student_id,
-        course: userInfo.course || "",
-        school: userInfo.school || "",
-        year_level: userInfo.year_level || "",
-        hours_required: userInfo.hours_required || 0,
-      });
-    }
-  }, [userInfo]);
 
   if (isLoading) {
     return <Loading_Page />;
@@ -112,11 +97,11 @@ export default function Student_Profile() {
             </h1>
             {/* Course */}
             <span className="text-gray-500 text-sm text-center">
-              {studentInfo?.course}
+              {userInfo?.course}
             </span>
             {/* Student id if applicable */}
             <span className="text-xs ">
-              Student ID : {studentInfo?.student_id}
+              Student ID : {userInfo?.student_id}
             </span>
             <span className="py-1 px-2 bg-[#dbeafe] text-[#3a77fc] rounded-lg text-xs mt-4">
               Active
@@ -136,16 +121,7 @@ export default function Student_Profile() {
                 <span className="text-xs flex flex-col items-start text-gray-400">
                   Phone
                   <span className="text-black font-semibold">
-                    +63 {session?.user.phone}
-                  </span>
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin size={18} className="text-gray-400" />
-                <span className="text-xs flex flex-col items-start text-gray-400">
-                  Address
-                  <span className="text-black font-semibold">
-                    Dasmarinas Cavite
+                    +63 {session?.user.phone?.slice(1, 10)}
                   </span>
                 </span>
               </div>
@@ -161,13 +137,13 @@ export default function Student_Profile() {
               <span className="text-xs flex flex-col items-start text-gray-400">
                 Course
                 <span className="text-black font-semibold">
-                  {studentInfo?.course}
+                  {userInfo?.course}
                 </span>
               </span>
               <span className="text-xs flex flex-col items-start text-gray-400">
                 Year Level
                 <span className="text-black font-semibold">
-                  {studentInfo?.year_level}
+                  {userInfo?.year_level}
                 </span>
               </span>
             </div>
@@ -222,14 +198,13 @@ export default function Student_Profile() {
               <div className="flex flex-col self-end">
                 <p className="xs:text-md text-sm">Total Hours Completed</p>
                 <p className="xs:text-sm text-xs">
-                  {40} of {studentInfo?.hours_required || 0} required hours
+                  {40} of {userInfo?.hours_required || 0} required hours
                 </p>
               </div>
               {/* Progress in percentage */}
               <div className="text-end">
                 <p className="xs:text-2xl text-lg font-semibold text-blue-600">
-                  {progressPercentage}
-                  %
+                  {progressPercentage}%
                 </p>
                 <p className="xs:text-sm text-xs">
                   {progressRemaining} hours remaining
@@ -241,7 +216,7 @@ export default function Student_Profile() {
                 className="bg-black h-4 rounded-full"
                 style={{
                   width: `${(
-                    (40 / (studentInfo?.hours_required || 0)) *
+                    ((logTotals.total || 0) / (userInfo?.hours_required || 0)) *
                     100
                   ).toFixed(2)}%`,
                 }}
@@ -249,51 +224,82 @@ export default function Student_Profile() {
             </div>
             <div className="w-full flex sm:flex-row  flex-col items-center gap-3 mt-2">
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">
-                {Math.ceil(((studentInfo?.hours_required || 0) - 40) / 8)}{" "}
+                {Math.ceil(
+                  ((userInfo?.hours_required || 0) - (logTotals.total || 0)) / 8
+                )}
                 <span className="text-sm font-extralight">Days Left</span>
               </h1>
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">
-                4 <span className="text-sm font-extralight">Total Logs</span>
+                {logTotals.total_logs}{" "}
+                <span className="text-sm font-extralight">Total Logs</span>
               </h1>
               <h1 className="flex flex-col flex-1 p-3 rounded-lg bg-[#f3f3f5] items-center font-semibold text-xl self-stretch">
-                3 <span className="text-sm font-extralight">Approved</span>
+                {progressData.reduce(
+                  (count, log) =>
+                    log.status === "approved" ? count + 1 : count,
+                  0
+                )}{" "}
+                <span className="text-sm font-extralight">Approved</span>
               </h1>
             </div>
           </div>
-          {rooms.length > 0 && (<div className="flex flex-col items-center p-5 px-6 bg-white shadow-lg rounded-2xl gap-1">
-            <h1 className="flex items-center gap-2 w-full text-lg">
-              <Building size={18} className="text-[#3a77fc]" /> Company
-              Information
-            </h1>
-            <div className="w-full pt-4 grid xs:grid-cols-2 gap-4">
-              <div>
-                <span className="text-xs text-gray-400">Company</span>
-                <h1 className="text-black font-semibold text-sm">
-                  {rooms[0]?.company || "N/A"}
-                </h1>
-                <p className="text-xs text-gray-500">{rooms[0]?.company_location || "N/A"}</p>
-              </div>
-              <div>
-                <span className="text-xs text-gray-400">Supervisor</span>
-                <h1 className="text-black font-semibold text-sm">{rooms[0]?.supervisor_name || "N/A"}</h1>
-                <p className="text-xs text-gray-500">{rooms[0]?.supervisor_email || "N/A"}</p>
-              </div>
-              {/*  Date Start  */}
-              <div>
-                <span className="text-xs text-gray-400" onClick={() => console.log(enrolledDate)}>Start Date</span>
-                <h1 className="text-black font-semibold text-sm">
-                  {enrolledDate?.start_date ? new Date(enrolledDate.start_date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "N/A"}
-                </h1>
-              </div>
-              {/* Date End  */}
-              <div>
-                <span className="text-xs text-gray-400">End Date</span>
-                <h1 className="text-black font-semibold text-sm">
-                  {enrolledDate?.end_date ? new Date(enrolledDate.end_date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "N/A"}
-                </h1>
+          {rooms.length > 0 && (
+            <div className="flex flex-col items-center p-5 px-6 bg-white shadow-lg rounded-2xl gap-1">
+              <h1 className="flex items-center gap-2 w-full text-lg">
+                <Building size={18} className="text-[#3a77fc]" /> Company
+                Information
+              </h1>
+              <div className="w-full pt-4 grid xs:grid-cols-2 gap-4">
+                <div>
+                  <span className="text-xs text-gray-400">Company</span>
+                  <h1 className="text-black font-semibold text-sm">
+                    {rooms[0]?.company || "N/A"}
+                  </h1>
+                  <p className="text-xs text-gray-500">
+                    {rooms[0]?.company_location || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-xs text-gray-400">Supervisor</span>
+                  <h1 className="text-black font-semibold text-sm">
+                    {rooms[0]?.supervisor_name || "N/A"}
+                  </h1>
+                  <p className="text-xs text-gray-500">
+                    {rooms[0]?.supervisor_email || "N/A"}
+                  </p>
+                </div>
+                {/*  Date Start  */}
+                <div>
+                  <span
+                    className="text-xs text-gray-400"
+                    onClick={() => console.log(enrolledDate)}
+                  >
+                    Start Date
+                  </span>
+                  <h1 className="text-black font-semibold text-sm">
+                    {enrolledDate?.start_date
+                      ? new Date(enrolledDate.start_date).toLocaleDateString(
+                          "en-US",
+                          { year: "numeric", month: "long", day: "numeric" }
+                        )
+                      : "N/A"}
+                  </h1>
+                </div>
+                {/* Date End  */}
+                <div>
+                  <span className="text-xs text-gray-400">End Date</span>
+                  <h1 className="text-black font-semibold text-sm">
+                    {enrolledDate?.end_date
+                      ? new Date(enrolledDate.end_date).toLocaleDateString(
+                          "en-US",
+                          { year: "numeric", month: "long", day: "numeric" }
+                        )
+                      : "N/A"}
+                  </h1>
+                </div>
               </div>
             </div>
-          </div>)}
+          )}
         </div>
       </div>
 
@@ -371,7 +377,7 @@ export default function Student_Profile() {
                   </label>
                   <input
                     type="text"
-                    defaultValue={studentInfo?.course.trim()}
+                    defaultValue={userInfo?.course?.trim()}
                     className="w-full py-1 px-3 border rounded-lg focus:outline-none"
                   />
                 </div>
@@ -381,7 +387,7 @@ export default function Student_Profile() {
                   </label>
                   <input
                     type="text"
-                    defaultValue={studentInfo?.year_level.trim()}
+                    defaultValue={userInfo?.year_level?.trim()}
                     className="w-full py-1 px-3 border rounded-lg focus:outline-none"
                   />
                 </div>

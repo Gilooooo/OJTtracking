@@ -1,3 +1,6 @@
+import { useNonStudentStore } from "@/store/useNonStudentstore";
+import { useStudentStore } from "@/store/useStudentStore";
+import { useSupervisorStore } from "@/store/useSupervisor";
 import {
   Bell,
   BookOpen,
@@ -42,21 +45,56 @@ export default function MobileNavBar({
   };
   const { data: session } = useSession();
   const [initialName, setInitialName] = useState<string>("");
+  const studentStore = useStudentStore();
+  const supervisorStore = useSupervisorStore();
+  const nonStudentStore = useNonStudentStore();
 
-  const InitialNaming = () => {
-    const name = session?.user?.name?.trim();
-    const t = name?.split(" ");
-    setInitialName((t?.[0]?.[0] || "") + (t?.[1]?.[0] || ""));
+  const getUserData = () => {
+    switch (session?.user?.role) {
+      case "student":
+        return {
+          role: "Student",
+          course: studentStore.userInfo.course,
+          isLoading: studentStore.isLoading,
+        };
+      case "supervisor":
+        return {
+          role: "Supervisor",
+          company: supervisorStore.userInfo.company,
+          isLoading: supervisorStore.isLoading,
+        };
+      case "non-student":
+        return {
+          role: "Non student",
+          isLoading: nonStudentStore.isLoading,
+        };
+      default:
+        return { isLoading: false };
+    }
   };
+
+  const userData = getUserData();
+
   useEffect(() => {
+    // Initial Name Function
+    const InitialNaming = () => {
+      const name = session?.user?.name?.trim();
+      const t = name?.split(" ");
+      setInitialName((t?.[0]?.[0] || "") + (t?.[1]?.[0] || ""));
+    };
     InitialNaming();
-  });
+  }, [session]);
 
   return (
     <>
       <nav className="md:hidden bg-white w-full text-black  ">
         <div className="flex items-center justify-between p-4">
-          <span className="font-semibold">OJT Tracking</span>
+          <div className="flex-col flex">
+            <span className="font-semibold">OJT Tracking</span>
+            <span className="text-xs text-gray-600">
+              {userData.role} Portal
+            </span>
+          </div>
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2">
             {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -64,16 +102,20 @@ export default function MobileNavBar({
         {isMenuOpen && (
           <div className="absolute top-16 left-0 w-full bg-white shadow-lg z-50">
             <div className="p-4">
-              <div className="bg-blue-500 p-4 rounded-2xl text-xs mb-4">
+              <div className="bg-radial from-[#3a77fc] from-50% to-[#dbeafe] p-4 rounded-2xl text-xs mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="h-14 w-14 rounded-full bg-amber-400 flex items-center justify-center">
+                  <div className="h-14 w-14 rounded-full bg-[#dbeafe]/30 flex items-center justify-center">
                     {initialName}
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm">{session?.user?.name}</span>
-                    {session?.user?.role.trim() == "student" ? (
-                      <span>Student Course</span>
-                    ) : null}
+                    {session?.user.role === "supervisor" || "student" ? (
+                      <span className="text-xs">
+                        {userData.company || userData.course}
+                      </span>
+                    ) : (
+                      <span className="text-xs">Non Student</span>
+                    )}
                   </div>
                 </div>
                 <div className="flex justify-between items-center pt-3">

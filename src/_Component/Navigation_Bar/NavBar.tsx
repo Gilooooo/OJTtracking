@@ -1,3 +1,6 @@
+import { useNonStudentStore } from "@/store/useNonStudentstore";
+import { useStudentStore } from "@/store/useStudentStore";
+import { useSupervisorStore } from "@/store/useSupervisor";
 import { Bell, BookOpen, HomeIcon, LogOut, User2, Users2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -7,18 +10,6 @@ interface NavBarProps {
   setActiveSection: (section: string) => void;
   handleLogout: () => void;
   setIsComponentLoading?: (loading: boolean) => void;
-}
-
-interface Information {
-  id?: string;
-  name?: string;
-  email?: string;
-  role?: string;
-}
-
-interface Data {
-  studentCourse?: string;
-  company?: string;
 }
 
 export default function NavBar({
@@ -39,52 +30,45 @@ export default function NavBar({
     }
   };
   const { data: session } = useSession();
-  const [information, setInformation] = useState<Information>({});
-  const [additionalInfo, setAdditionalInfo] = useState<Data>({});
   const [initialName, setInitialName] = useState<string>("");
-  const capitalizeFirst = () =>
-    information.role
-      ? information.role[0].toUpperCase() + information.role.slice(1)
-      : "";
+  const studentStore = useStudentStore();
+  const supervisorStore = useSupervisorStore();
+  const nonStudentStore = useNonStudentStore();
+
+  const getUserData = () => {
+    switch (session?.user?.role) {
+      case "student":
+        return {
+          role: "Student",
+          course: studentStore.userInfo.course,
+          isLoading: studentStore.isLoading,
+        };
+      case "supervisor":
+        return {
+          role: "Supervisor",
+          company: supervisorStore.userInfo.company,
+          isLoading: supervisorStore.isLoading,
+        };
+      case "non-student":
+        return {
+          role: "Non student",
+          isLoading: nonStudentStore.isLoading,
+        };
+      default:
+        return { isLoading: false };
+    }
+  };
+
+  const userData = getUserData();
 
   useEffect(() => {
-    const name = session?.user?.name;
-    const t = name?.split(" ");
-    setInitialName((t?.[0]?.[0] || "") + (t?.[1]?.[0] || ""));
-    const fetchData = async () => {
-      try {
-        if (session?.user?.role == "student") {
-          const response = await fetch(
-            `/api/request/student/info?id=${session?.user?.id}`
-          );
-          const data = await response.json();
-          if (response.ok) {
-            setAdditionalInfo({ studentCourse: data?.course });
-          } else {
-            console.error("Error:", data.error);
-          }
-        } else if (session?.user?.role == "supervisor") {
-          const response = await fetch(
-            `/api/request/supervisor?id=${session?.user?.id}`
-          );
-          const data = await response.json();
-          if (response.ok) {
-            setAdditionalInfo({ company: data?.company });
-          } else {
-            console.error("Error:", data.error);
-          }
-        }
-      } catch (error) {
-        console.error("Fetch error:", error);
-      }
+    // Initial Name Function
+    const InitialNaming = () => {
+      const name = session?.user?.name?.trim();
+      const t = name?.split(" ");
+      setInitialName((t?.[0]?.[0] || "") + (t?.[1]?.[0] || ""));
     };
-    fetchData();
-    setInformation({
-      id: session?.user?.id || undefined,
-      name: session?.user?.name || undefined,
-      email: session?.user?.email || undefined,
-      role: session?.user?.role || undefined,
-    });
+    InitialNaming();
   }, [session]);
 
   return (
@@ -92,23 +76,18 @@ export default function NavBar({
       <nav className="h-full bg-white min-w-xs px-4 py-1 md:block hidden">
         <div className="px-3 py-4 flex flex-col">
           <span>Ojt Tracking</span>
-          <span className="text-xs text-gray-600">
-            {capitalizeFirst()} Portal
-          </span>
+          <span className="text-xs text-gray-600">{userData.role} Portal</span>
         </div>
         <div className="bg-radial from-[#3a77fc] from-50% to-[#dbeafe] p-4 rounded-2xl text-xs shadow">
           <div className="flex items-center gap-2">
-            <div
-              className="h-14 w-14 flex items-center justify-center rounded-full bg-[#dbeafe]/30"
-              onClick={() => console.log(additionalInfo)}
-            >
+            <div className="h-14 w-14 flex items-center justify-center rounded-full bg-[#dbeafe]/30">
               {initialName}
             </div>
             <div className="flex flex-col">
-              <span className="text-sm">{information.name}</span>
-              {information.role === "supervisor" || "student" ? (
+              <span className="text-sm">{session?.user.name}</span>
+              {session?.user.role === "supervisor" || "student" ? (
                 <span className="text-xs">
-                  {additionalInfo.company || additionalInfo.studentCourse}
+                  {userData.company || userData.course}
                 </span>
               ) : (
                 <span className="text-xs">Non Student</span>
