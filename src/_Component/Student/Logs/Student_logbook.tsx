@@ -53,6 +53,7 @@ export default function Student_LogBook() {
     isLoading,
     progressData,
     fetchEnrolledRooms,
+    fetchUserData,
     fetchProgressData,
   } = useStudentStore();
   const [modalAppear, setModalAppear] = useState<boolean>(false);
@@ -169,6 +170,7 @@ export default function Student_LogBook() {
           description: "",
           attachments: [],
         });
+        fetchUserData(session?.user.id || "", session?.user.email || "")
         setTasks([]);
         fetchProgressData(session?.user.email || "");
       }
@@ -203,12 +205,6 @@ export default function Student_LogBook() {
     setStatusFilter(status);
     filterLogs(searchTerm, status);
   };
-
-  useEffect(() => {
-    if (showLogbook && session?.user?.email) {
-      fetchProgressData(session.user.email);
-    }
-  }, [showLogbook, session?.user?.email, fetchProgressData]);
 
   useEffect(() => {
     setFilteredData(progressData);
@@ -368,7 +364,7 @@ export default function Student_LogBook() {
                 ))}
               </div>
             </div>
-            {log?.attachments?.length && (
+            {log?.attachments?.length ? (
               <>
                 <h4 className="text-xs">Attachments:</h4>
                 <div className="flex flex-wrap gap-2">
@@ -383,7 +379,7 @@ export default function Student_LogBook() {
                   ))}
                 </div>
               </>
-            )}
+            ) : <></>}
           </div>
         ))}
         <LogbookModal

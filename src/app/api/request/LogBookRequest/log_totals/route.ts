@@ -10,8 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const email = searchParams.get("email");
-    const getTotal = await client.query("SELECT SUM(hours_worked) as total, COUNT(*) as total_logs FROM log_book WHERE email_add = $1",[email]);
-    console.log(getTotal.rows)
+    const getTotal = await client.query("SELECT SUM(CASE WHEN status = 'approved' THEN hours_worked ELSE 0 END) as total, COUNT(*) as total_logs FROM log_book WHERE email_add = $1",[email]);
     return new Response(
       JSON.stringify({total: getTotal.rows[0].total, total_logs: getTotal.rows[0].total_logs}),
       { status: 200 }

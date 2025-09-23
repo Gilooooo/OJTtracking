@@ -3,6 +3,8 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Loading_Page from "@/_Component/Loading/Loading";
 import { useNonStudentStore } from "@/store/useNonStudentstore";
+import Alert_Modal from "@/_Component/Modal/Alert_Modal";
+import SuccessModal from "@/_Component/Modal/Success_Modal";
 
 interface ProfileData {
   fullName?: string;
@@ -277,65 +279,24 @@ export default function Nonstudent_Profile({
           </div>
         </div>
       )}
-      {alertModal && (
-        <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Alert</h2>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <section className="space-y-2">
-              <div>
-                <p className="text-center">
-                  Changing profile require you to re-login after changing{" "}
-                  <span className="text-red-500">
-                    Are you sure to update your profile?
-                  </span>
-                </p>
-              </div>
-              <div className="flex gap-2 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setAlertModal(false)}
-                  className="flex-1 py-2 px-4 border rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  className="flex-1 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                  onClick={(e) => {
-                    setIsModalOpen(true);
-                    setAlertModal(false);
-                    e.preventDefault();
-                  }}
-                >
-                  Proceed
-                </button>
-              </div>
-            </section>
-          </div>
-        </div>
-      )}
+      <Alert_Modal
+        isOpen={alertModal}
+        title="Alert"
+        message="Changing profile require you to re-login after changing. Are you sure to update your profile?"
+        onCancel={() => setAlertModal(false)}
+        onProceed={() => {
+          setAlertModal(false);
+          setIsModalOpen(true);
+        }}
+        cancelText="Cancel"
+        proceedText="Proceed"
+      />
       {successModal && (
-        <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Success</h2>
-            </div>
-            <section className="space-y-2">
-              <div>
-                <p className="text-center">
-                  Successfully Update your profile, kindly relogin again!
-                </p>
-              </div>
-            </section>
-          </div>
-        </div>
+        <SuccessModal
+          title="Success"
+          message="Successfully updated your profile, kindly relogin again!"
+          onClose={() => setSuccessModal(false)}
+        />
       )}
     </main>
   );

@@ -20,8 +20,10 @@ export default function Student_Dashboard() {
     logTotals,
     rooms,
     fetchUserData,
+    progressData,
     isLoading,
     fetchEnrolledRooms,
+    fetchProgressData,
   } = useStudentStore();
 
   useEffect(() => {
@@ -29,11 +31,18 @@ export default function Student_Dashboard() {
       fetchUserData(session.user.id, session.user.email);
     }
   }, [
+    fetchProgressData,
     fetchUserData,
     userInfo.student_id,
     session?.user.id,
     session?.user.email,
   ]);
+
+  useEffect(() => {
+    if (session?.user.email && !progressData.length) {
+      fetchProgressData(session.user.email);
+    }
+  }, [fetchProgressData, session?.user.email, progressData.length]);
 
   useEffect(() => {
     if (userInfo.student_id && session?.user?.name) {
@@ -96,7 +105,7 @@ export default function Student_Dashboard() {
             }}
           ></div>
         </div>
-        {rooms.length && (
+        {rooms.length ? (
           <div className="flex xs:flex-row flex-col xs:gap-0 gap-3 items-center border-t border-gray-200 py-4 mt-4 ">
             <div className="flex items-center gap-2 flex-1/2 w-full">
               <span className="p-3 bg-gray-300 rounded-2xl text-[#787a7e]">
@@ -119,6 +128,8 @@ export default function Student_Dashboard() {
               </div>
             </div>
           </div>
+        ) : (
+          <></>
         )}
       </div>
       {/* Status */}
@@ -184,7 +195,9 @@ export default function Student_Dashboard() {
       <div className="flex gap-3 lg:flex-row md:flex-col sm:flex-row flex-col">
         <div className="flex-1 p-5 shadow-lg rounded-2xl bg-white">
           <div className="flex items-center justify-between">
-            <span className="text-sm">Recent Activities</span>
+            <span className="text-sm" onClick={() => console.log(progressData)}>
+              Recent Activities
+            </span>
             <button className="py-1 px-3 rounded-2xl hover:bg-white hover:shadow-lg flex items-center">
               View All <ChevronRight size={18} />
             </button>

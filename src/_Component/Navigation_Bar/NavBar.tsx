@@ -86,7 +86,7 @@ export default function NavBar({
             <div className="flex flex-col">
               <span className="text-sm">{session?.user.name}</span>
               {session?.user.role === "supervisor" || "student" ? (
-                <span className="text-xs">
+                <span className="text-xs max-w-[15rem] text-gray-700">
                   {userData.company || userData.course}
                 </span>
               ) : (

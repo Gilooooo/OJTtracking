@@ -6,6 +6,8 @@ interface UserInfo {
   school?: string;
   year_level?: string;
   hours_required?: number;
+  gwa?:number;
+  achievements?: [];
 }
 
 interface FileAttachment {
@@ -71,7 +73,6 @@ export const useStudentStore = create<StudentStore>((set) => ({
   fetchUserData: async (userId: string, email:string) => {
     try {
       set({ isLoading: true });
-
       const [userResponse, totalsResponse] = await Promise.all([
         fetch(`/api/request/student/info?&id=${userId}`),
         fetch(`/api/request/LogBookRequest/log_totals?email=${email}`)
@@ -100,7 +101,6 @@ export const useStudentStore = create<StudentStore>((set) => ({
         rooms: data.rooms || [],
         isLoading: false,
       });
-      console.log(data.start_date);
     } catch (error) {
       console.error("Error fetching user data:", error);
       set({ rooms: [], isLoading: false });

@@ -70,7 +70,7 @@ export default function Dashboard() {
         if (role === "supervisor") {
           return <Supervisor_Profile />;
         } else if (role === "student") {
-          return <Student_Profile />;
+          return <Student_Profile handleLogout = {handleLogout}/>;
         } else if (role === "non-student") {
           return <Nonstudent_Profile handleLogout = {handleLogout}/>;
         }

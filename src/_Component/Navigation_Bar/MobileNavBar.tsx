@@ -12,7 +12,6 @@ import {
   X,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
 
 interface MobileNavBarProps {
   isMenuOpen: boolean;
@@ -44,7 +43,6 @@ export default function MobileNavBar({
     }
   };
   const { data: session } = useSession();
-  const [initialName, setInitialName] = useState<string>("");
   const studentStore = useStudentStore();
   const supervisorStore = useSupervisorStore();
   const nonStudentStore = useNonStudentStore();
@@ -75,15 +73,6 @@ export default function MobileNavBar({
 
   const userData = getUserData();
 
-  useEffect(() => {
-    // Initial Name Function
-    const InitialNaming = () => {
-      const name = session?.user?.name?.trim();
-      const t = name?.split(" ");
-      setInitialName((t?.[0]?.[0] || "") + (t?.[1]?.[0] || ""));
-    };
-    InitialNaming();
-  }, [session]);
 
   return (
     <>
@@ -104,13 +93,10 @@ export default function MobileNavBar({
             <div className="p-4">
               <div className="bg-radial from-[#3a77fc] from-50% to-[#dbeafe] p-4 rounded-2xl text-xs mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="h-14 w-14 rounded-full bg-[#dbeafe]/30 flex items-center justify-center">
-                    {initialName}
-                  </div>
                   <div className="flex flex-col">
-                    <span className="text-sm">{session?.user?.name}</span>
+                    <span className="text-lg">{session?.user?.name}</span>
                     {session?.user.role === "supervisor" || "student" ? (
-                      <span className="text-xs">
+                      <span className="text-xs text-gray-700">
                         {userData.company || userData.course}
                       </span>
                     ) : (
