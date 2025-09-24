@@ -51,7 +51,7 @@ export default function Dashboard() {
         if (role === "supervisor") {
           return <Supervisor_Dashboard />;
         } else if (role === "student") {
-          return <Student_Dashboard />;
+          return <Student_Dashboard  setActiveSection={setActiveSection}/>;
         } else if (role === "non-student") {
           return <NonStudent_dashboard  setActiveSection={setActiveSection}/>;
         }
@@ -83,7 +83,7 @@ export default function Dashboard() {
         if (role === "supervisor") {
           return <Supervisor_Dashboard />;
         } else if (role === "student") {
-          return <Student_Dashboard />;
+          return <Student_Dashboard setActiveSection={setActiveSection}/>;
         } else if (role === "non-student") {
           return <NonStudent_dashboard setActiveSection={setActiveSection}/>;
         }

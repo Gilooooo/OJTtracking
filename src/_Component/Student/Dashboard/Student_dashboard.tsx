@@ -13,7 +13,12 @@ import {
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 
-export default function Student_Dashboard() {
+
+interface StudentDashboardProps {
+  setActiveSection: (section: string) => void;
+}
+
+export default function Student_Dashboard({setActiveSection} : StudentDashboardProps) {
   const { data: session } = useSession();
   const {
     userInfo,
@@ -25,6 +30,21 @@ export default function Student_Dashboard() {
     fetchEnrolledRooms,
     fetchProgressData,
   } = useStudentStore();
+  const getTimeElapsed = (date: string, time: string) => {
+    const logDateTime = new Date(`${date} ${time}`);
+    const now = new Date();
+    const diffMs = now.getTime() - logDateTime.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffWeeks = Math.floor(diffDays / 7);
+    if (diffWeeks > 0)
+      return `${diffWeeks} week${diffWeeks > 1 ? "s" : ""} ago`;
+    if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+    if (diffHours > 0) return `${diffHours} hr${diffHours > 1 ? "s" : ""} ago`;
+    if (diffMins > 0) return `${diffMins} min${diffMins > 1 ? "s" : ""} ago`;
+    return "Just now";
+  };
 
   useEffect(() => {
     if (!userInfo.student_id && session?.user.id && session?.user.email) {
@@ -193,64 +213,83 @@ export default function Student_Dashboard() {
       </div>
       {/*  */}
       <div className="flex gap-3 lg:flex-row md:flex-col sm:flex-row flex-col">
-        <div className="flex-1 p-5 shadow-lg rounded-2xl bg-white">
-          <div className="flex items-center justify-between">
-            <span className="text-sm" onClick={() => console.log(progressData)}>
-              Recent Activities
-            </span>
-            <button className="py-1 px-3 rounded-2xl hover:bg-white hover:shadow-lg flex items-center">
-              View All <ChevronRight size={18} />
-            </button>
+        {progressData.length > 0 ? (
+          <div className="flex-1 p-5 shadow-lg rounded-2xl bg-white">
+            <div className="flex items-center justify-between">
+              <span
+                className="text-sm"
+                onClick={() => console.log(progressData)}
+              >
+                Recent Activities
+              </span>
+            </div>
+            <p className="text-[#787a7e] text-sm">
+              Your latest OJT updates and milestones
+            </p>
+            {/* Activites  */}
+            <div className="flex flex-col mt-4 space-y-3">
+              {/* Recent Update for log - Latest Entry Only */}
+              <div className="flex items-center gap-2 py-2 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
+                <span className="p-2 bg-[#fef9c2] text-[#e2b44d] rounded-lg self-start">
+                  <BookOpen size={18} />
+                </span>
+                <div className="flex flex-col gap-1 text-[#787a7e]">
+                  <h1 className=" text-md text-black">
+                    {progressData[0]?.title}
+                  </h1>
+                  {/* Task Description */}
+                  <span className="text-sm -my-1">
+                    {progressData[0]?.description}
+                  </span>
+                  {/* Hours */}
+                  <span className="text-xs">
+                    {getTimeElapsed(
+                      progressData[0]?.date || "",
+                      progressData[0]?.time || ""
+                    )}
+                  </span>
+                </div>
+              </div>
+              {progressData[0].feedback_supervisor ? (
+                <div className="flex items-center gap-2 py-2 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
+                  <span className="p-2 bg-[#dbeafe] text-[#3a77fc] rounded-lg self-start">
+                    <Star size={18} />
+                  </span>
+                  <div className="flex flex-col gap-1 text-[#787a7e]">
+                    <h1 className=" text-md text-black">Supervisor feedback</h1>
+                    {/* Recent */}
+                    <span className="text-sm -my-1">
+                      {progressData[0].feedback_supervisor}
+                    </span>
+                    {/* Hours */}
+                    <span className="text-xs">2 hours ago</span>
+                  </div>
+                </div>
+              ) : (
+                <></>
+              )}
+              {logTotals.total != 0 ? (
+                <div className="flex items-center gap-2 py-2 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
+                  <span className="p-2 bg-[#dbfce7] text-[#2ab65e] rounded-lg self-start">
+                    <CircleCheckBig size={18} />
+                  </span>
+                  <div className="flex flex-col gap-1 text-[#787a7e]">
+                    <h1 className=" text-md text-black">{logTotals.total}</h1>
+                    <span className="text-sm -my-1">
+                      You&apos;re making excellent progress!
+                    </span>
+                    {/* Hours */}
+                    <span className="text-xs">2 hours ago</span>
+                  </div>
+                </div>
+              ) : (
+                <></>
+              )}
+            </div>
           </div>
-          <p className="text-[#787a7e] text-sm">
-            Your latest OJT updates and milestones
-          </p>
-          {/* Activites  */}
-          <div className="flex flex-col mt-4 space-y-3">
-            {/* Recent Update for log */}
-            <div className="flex items-center gap-2 py-2 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
-              <span className="p-2 bg-[#fef9c2] text-[#e2b44d] rounded-lg self-start">
-                <BookOpen size={18} />
-              </span>
-              <div className="flex flex-col gap-1 text-[#787a7e]">
-                <h1 className=" text-md text-black">Daily Log Submitted</h1>
-                {/* Task Description */}
-                <span className="text-sm -my-1">
-                  Frontend development task completed
-                </span>
-                {/* Hours */}
-                <span className="text-xs">2 hours ago</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 py-2 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
-              <span className="p-2 bg-[#dbeafe] text-[#3a77fc] rounded-lg self-start">
-                <Star size={18} />
-              </span>
-              <div className="flex flex-col gap-1 text-[#787a7e]">
-                <h1 className=" text-md text-black">Supervisor feedback</h1>
-                {/* Recent */}
-                <span className="text-sm -my-1">
-                  Great progress on the API integration
-                </span>
-                {/* Hours */}
-                <span className="text-xs">2 hours ago</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 py-2 px-3 bg-[#f8fafc] rounded-2xl shadow-md">
-              <span className="p-2 bg-[#dbfce7] text-[#2ab65e] rounded-lg self-start">
-                <CircleCheckBig size={18} />
-              </span>
-              <div className="flex flex-col gap-1 text-[#787a7e]">
-                <h1 className=" text-md text-black">350 hours completed</h1>
-                <span className="text-sm -my-1">
-                  You&apos;re making excellent progress!
-                </span>
-                {/* Hours */}
-                <span className="text-xs">2 hours ago</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        ) : (
+          <></>
+        )}
 
         <div className="flex-1 p-5 shadow-lg rounded-2xl bg-white">
           <div className="flex flex-col gap-3">
@@ -259,11 +298,11 @@ export default function Student_Dashboard() {
           </div>
           <div className="flex flex-col space-y-2 mt-4">
             {/* Log Book */}
-            <button className="flex items-center gap-3 rounded-2xl bg-[#f8fafc] px-4 py-2 hover:shadow-md">
+            <button className="flex items-center gap-3 rounded-2xl bg-[#f8fafc] px-4 py-2 hover:shadow-md" onClick={() => setActiveSection("logbook")}>
               <span>
                 <BookOpen size={18} />
               </span>
-              <p className="flex flex-col flex-1 text-start text-sm">
+              <p className="flex flex-col flex-1 text-start text-sm" >
                 Add New Log Entry
                 <span className="text-xs">Record your daily activities</span>
               </p>
@@ -272,7 +311,7 @@ export default function Student_Dashboard() {
               </span>
             </button>
             {/* Log Book */}
-            <button className="flex items-center gap-3 rounded-2xl bg-[#f8fafc] px-4 py-2 hover:shadow-md">
+            <button className="flex items-center gap-3 rounded-2xl bg-[#f8fafc] px-4 py-2 hover:shadow-md" onClick={() => setActiveSection("profile")}>
               <span>
                 <User2 size={18} />
               </span>

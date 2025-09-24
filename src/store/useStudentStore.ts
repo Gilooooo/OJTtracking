@@ -42,6 +42,7 @@ interface ProgressData {
   tasks_completed?: string[];
   status?: string;
   attachments?: FileAttachment[];
+  feedback_supervisor?: string;
 }
 
 interface LogTotal{
